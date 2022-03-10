@@ -3,6 +3,7 @@
 
 To run this server, we will need to install additional packages:
 
+0. git
 1. Python
    a. python3
    b. python3-pip
@@ -11,6 +12,20 @@ To run this server, we will need to install additional packages:
    b. bottle-sqlite
 3. Database
    a. sqlite3
+
+## 0. git
+
+### 0.a Install Git (this is optional)
+
+``` bash
+sudo apt-get install git
+```
+
+### 0.b Clone this Repo
+
+``` bash
+git clone https://github.com/kkatayama/m2band.git
+```
 
 ## 1. Python
 
