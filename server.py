@@ -9,7 +9,7 @@ app = Bottle()
 plugin = SQLitePlugin(dbfile="m2band.db")
 app.install(plugin)
 
-@app.route("/", method="GET")
+@app.route("/", method=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
 def index():
     response = {
         "message": "available commands",
@@ -22,7 +22,7 @@ def index():
                 "Note": "debug function",
                 "Returns": "list of users in the 'users' table"
             }}, {
-            "getAllSensorData": {
+            "/getAllSensorData": {
                 "Note": "debug function",
                 "Returns": "Sensor data for all users"
             }}
