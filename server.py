@@ -155,6 +155,9 @@ def getUsers(db):
     print(response)
     return response
 
+###############################################################################
+#                           Oximeter Table Functions                          #
+###############################################################################
 @app.route("/addSensorData", method="POST")
 def addSensorData(db):
     user_id     = request.forms["user_id"]
