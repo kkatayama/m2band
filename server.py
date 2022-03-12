@@ -1,12 +1,16 @@
-from bottle import Bottle, request, run
-from bottle_sqlite import SQLitePlugin
+from bottle import Bottle, request, run, template
+from bottle_sqlite import SQLitePlugin, sqlite3
 from db_functions import *
 from datetime import datetime
+# from rich.traceback import install
+from rich import print, inspect, print_json, pretty
+import json
 import os
 
+pretty.install()
 
 app = Bottle()
-plugin = SQLitePlugin(dbfile="m2band.db")
+plugin = SQLitePlugin(dbfile="m2band.db", detect_types=sqlite3.PARSE_DECLTYPES|sqlite3.PARSE_COLNAMES)
 app.install(plugin)
 
 @app.route("/", method=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
@@ -53,10 +57,17 @@ def index():
                     "username": "username"
                 }]
             },
-            "/addSensorData": {
-                "Params": ["user_id", "heart_rate", "blood_o2", "temperature", "entry_time"],
+            "/getUser": {
+                "Params": ["user_id"],
                 "Returns": [{
-                    "message": "data added",
+                    "message": "user account details",
+                    "data": "json object of user info for 'user_id'"
+                }]
+            },
+            "/addSensorData": {
+                "Params": ["user_id", "heart_rate", "blood_o2", "temperature"],
+                "Returns": [{
+                    "message": "sensor data added for 'user_id'",
                     "user_id": "user_id",
                     "entry_id": "entry_id"
                 }]
@@ -64,7 +75,7 @@ def index():
             "/getSensorData": {
                 "Params": ["user_id"],
                 "Returns": [{
-                    "message": "user_data",
+                    "message": "sensor data for 'user_id'",
                     "data": "list of sensor data for 'user_id'"
                 }]
             }
@@ -82,7 +93,13 @@ def login(db):
     password = request.forms["password"]
 
     # -- check if user exists
-    row = fetchRow(db, table="users", condition="username=?", query_params=[username])
+    params = {
+        "table": "users",
+        "where": "username=?",
+        "values": username
+    }
+    row = fetchRow(db, **params)
+
     if not row:
         response = {
             "message": "user does not exist",
@@ -112,28 +129,33 @@ def login(db):
 
 @app.route("/createUser", method="POST")
 def createUser(db):
-    username  = request.forms["username"]
-    plaintext = request.forms["password"]
-
-    password = securePassword(plaintext)
+    username  = request.POST["username"]
+    plaintext = request.POST["password"]
+    password  = securePassword(plaintext)
     create_time = datetime.now()
 
     # -- check if user exists
-    row = fetchRow(db, table="users", condition="username=?", query_params=[username])
+    params = {
+        "table": "users",
+        "where": "username=?",
+        "values": username
+    }
+    row = fetchRow(db, **params)
     if row:
         response = {
             "message": "user exists",
-            "username": username
+            "username": row["username"]
         }
         print(response)
         return response
 
     # -- if user doesn't exist, create user
-    # query = "INSERT INTO users (username,password,create_time) VALUES (?, ?, ?) RETURNING user_id;"
-    # row = db.execute(query, [username, hash_pass, create_time])
-    columns = ["username", "password", "create_time"]
-    params  = [username, password, create_time]
-    user_id = insertRow(db, table="users", columns=columns, query_params=params)
+    params = {
+        "table": "users",
+        "columns": ["username", "password", "create_time"],
+        "values": [username, password, create_time],
+    }
+    user_id = insertRow(db, **params)
     response = {
         "message": "user created",
         "user_id": user_id,
@@ -144,33 +166,59 @@ def createUser(db):
 
 @app.route("/getUsers", method="GET")
 def getUsers(db):
+    inspect(request.GET)
     """
     This function is here for debugging purposes
     """
-    users = fetchRows(db, table="users")
+    params = {"table": "users"}
+    rows = fetchRows(db, **params)
     response = {
-        "message": "users",
-        "users": users
+        "message": f"found {len(rows)} users",
+        "users": clean(rows)
     }
     print(response)
     return response
+
+
+@app.route('/getUser', method="POST")
+def getUser(db):
+    user_id = request.POST.get('user_id')
+    # row = fetchRow(db, table="users", )
+    params = {
+        "table": "users",
+        "where": "user_id=?",
+        "values": user_id
+    }
+    row = fetchRow(db, **params)
+
+    response = {
+        "message": "user account details",
+        "data": clean(row)
+    }
+    print(response)
+    return response
+
 
 ###############################################################################
 #                           Oximeter Table Functions                          #
 ###############################################################################
 @app.route("/addSensorData", method="POST")
 def addSensorData(db):
-    user_id     = request.forms["user_id"]
-    heart_rate  = request.forms["heart_rate"]
-    blood_o2    = request.forms["blood_o2"]
-    temperature = request.forms["temperature"]
+    user_id     = request.POST["user_id"]
+    heart_rate  = request.POST["heart_rate"]
+    blood_o2    = request.POST["blood_o2"]
+    temperature = request.POST["temperature"]
     entry_time  = datetime.now()
 
-    columns = ["user_id", "heart_rate", "blood_o2", "temperature", "entry_time"]
-    params  = [user_id, heart_rate, blood_o2, temperature, entry_time]
-    entry_id = insertRow(db, table="oximeter", columns=columns, query_params=params)
+    params = {
+        "table": "oximeter",
+        "columns": ["user_id", "heart_rate", "blood_o2", "temperature", "entry_time"],
+        "values": [user_id, heart_rate, blood_o2, temperature, entry_time]
+    }
+    entry_id = insertRow(db, **params)
+
     response = {
-        "message": "data added",
+        "message": "sensor data added for 'user_id'",
         "user_id": user_id,
         "entry_id": entry_id
     }
@@ -179,15 +227,17 @@ def addSensorData(db):
 
 @app.route("/getSensorData", method=["POST"])
 def getSensorData(db):
-    print(request.query.__dict__)
-    print(request.forms.__dict__)
-    print(request.params.__dict__)
-    user_id = request.forms["user_id"]
+    user_id = request.POST["user_id"]
+    params = {
+        "table": "oximeter",
+        "where": "user_id=?",
+        "values": user_id
+    }
+    row = fetchRows(db, **params)
 
-    user_data = fetchRows(db, table="oximeter", condition="user_id=?", query_params=[user_id])
     response = {
-        "message": "user_data",
-        "data": user_data
+        "message": "sensor data for 'user_id'",
+        "data": clean(user_data)
     }
     print(response)
     return response
@@ -197,14 +247,18 @@ def getAllSensorData(db):
     """
     This function is here for debugging purposes
     """
-    all_data = fetchRows(db, table="oximeter")
+    params = {
+        "table": "oximeter"
+    }
+    all_data = fetchRows(db, **params)
+
     response = {
-        "message": "all sensor data",
-        "data": all_data
+        "message": "sensor data for all users",
+        "data": clean(all_data)
     }
     print(response)
     return response
 
 # -- Run Web Server
 port = int(os.environ.get("PORT", 8080))
-run(app, host="0.0.0.0", port=port, reloader=True)
+run(app, host="0.0.0.0", port=port, reloader=True, debug=True)

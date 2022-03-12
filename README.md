@@ -51,7 +51,7 @@ pip3 install bottle
 
 ### 2.b Installing `bottle-sqlite`
 ```bash
-pip3 install bottle-sqlite
+pip3 install -U git+https://github.com/kkatayama/bottle-sqlite.git@master
 ```
 
 ## 3. Database
