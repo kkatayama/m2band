@@ -3,11 +3,11 @@ from bottle_sqlite import SQLitePlugin, sqlite3
 from db_functions import *
 from datetime import datetime
 # from rich.traceback import install
-from rich import print, inspect, print_json, pretty
+# from rich import print, inspect, print_json, pretty
 import json
 import os
 
-pretty.install()
+# pretty.install()
 
 app = Bottle()
 plugin = SQLitePlugin(dbfile="m2band.db", detect_types=sqlite3.PARSE_DECLTYPES|sqlite3.PARSE_COLNAMES)
