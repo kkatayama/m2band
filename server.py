@@ -3,11 +3,11 @@ from bottle_sqlite import SQLitePlugin, sqlite3
 from db_functions import *
 from datetime import datetime
 # from rich.traceback import install
-# from rich import print, inspect, print_json, pretty
+from rich import print, inspect, print_json, pretty
 import json
 import os
 
-# pretty.install()
+pretty.install()
 
 app = Bottle()
 plugin = SQLitePlugin(dbfile="m2band.db", detect_types=sqlite3.PARSE_DECLTYPES|sqlite3.PARSE_COLNAMES)
@@ -69,7 +69,7 @@ def index():
                 "Returns": [{
                     "message": "sensor data added for 'user_id'",
                     "user_id": "user_id",
-                    "entry_id": "entry_id"
+                    "row_id": "row_id"
                 }]
             },
             "/getSensorData": {
@@ -89,8 +89,16 @@ def index():
 ###############################################################################
 @app.route("/login", method="POST")
 def login(db):
-    username = request.forms["username"]
-    password = request.forms["password"]
+    try:
+        username = request.POST["username"]
+        password = request.POST["password"]
+    except KeyError:
+        response = {
+            "message": "missing paramater",
+            "required params": ["username", "password"]
+        }
+        print(response)
+        return response
 
     # -- check if user exists
     params = {
@@ -99,7 +107,6 @@ def login(db):
         "values": username
     }
     row = fetchRow(db, **params)
-
     if not row:
         response = {
             "message": "user does not exist",
@@ -129,8 +136,16 @@ def login(db):
 
 @app.route("/createUser", method="POST")
 def createUser(db):
-    username  = request.POST["username"]
-    plaintext = request.POST["password"]
+    try:
+        username  = request.POST["username"]
+        plaintext = request.POST["password"]
+    except KeyError:
+        response = {
+            "message": "missing paramater",
+            "required params": ["username", "password"]
+        }
+        print(response)
+        return response
     password  = securePassword(plaintext)
     create_time = datetime.now()
 
@@ -153,9 +168,10 @@ def createUser(db):
     params = {
         "table": "users",
         "columns": ["username", "password", "create_time"],
-        "values": [username, password, create_time],
+        "col_values": [username, password, create_time],
     }
     user_id = insertRow(db, **params)
+
     response = {
         "message": "user created",
         "user_id": user_id,
@@ -164,26 +180,127 @@ def createUser(db):
     print(response)
     return response
 
-@app.route("/getUsers", method="GET")
-def getUsers(db):
-    inspect(request.GET)
-    """
-    This function is here for debugging purposes
-    """
-    params = {"table": "users"}
-    rows = fetchRows(db, **params)
+@app.route("/editUser", method=["PUT", "POST"])
+def editUser(db):
+    user_id = eval(f"request.{request.method}.get('user_id')")
+    username  = eval(f"request.{request.method}.get('username')")
+    plaintext = eval(f"request.{request.method}.get('password')")
+
+    # -- are we changing the (username) and (password)?
+    if (username and plaintext):
+        password = securePassword(plaintext)
+
+        params = {
+            "table": "users",
+            "columns": ["username", "password"],
+            "col_values": [username, password],
+            "where": "user_id=?",
+            "values": user_id
+        }
+        num_edits = updateRow(db, **params)
+
+        if num_edits:
+            response = {
+                "message": "user edited",
+                "user_id": user_id
+            }
+            print(response)
+            return response
+
+    # -- or just the (password)?
+    elif (plaintext):
+        password = securePassword(plaintext)
+
+        params = {
+            "table": "users",
+            "columns": ["password"],
+            "col_values": [password],
+            "where": "user_id=?",
+            "values": user_id
+
+        }
+        num_edits = updateRow(db, **params)
+
+        if num_edits:
+            response = {
+                "message": "user edited",
+                "user_id": user_id
+            }
+            print(response)
+            return response
+
+    # -- or just the (username)
+    elif (username):
+        params = {
+            "table": "users",
+            "columns": ["username"],
+            "col_values": [username],
+            "where": "user_id=?",
+            "values": user_id
+        }
+        num_edits = updateRow(db, **params)
+
+        if num_edits:
+            response = {
+                "message": "user edited",
+                "user_id": user_id
+            }
+            print(response)
+            return response
+
+    # -- either: bad request OR database error
     response = {
-        "message": f"found {len(rows)} users",
-        "users": clean(rows)
+        "message": "user edit error"
     }
     print(response)
     return response
 
+@app.route('/deleteUser', method=["DELETE", "POST"])
+def deleteUser(db):
+    try:
+        user_id = eval(f"request.{request.method}.get('user_id')")
+    except KeyError:
+        response = {
+            "message": "missing paramater",
+            "required params": ["user_id"]
+        }
+        print(response)
+        return response
+
+    params = {
+        "table": "users",
+        "where": "user_id=?",
+        "values": user_id
+    }
+    num_deletes = deleteRow(db, **params)
+
+    if num_deletes:
+        response = {
+            "message": "user deleted",
+            "user_id": user_id
+        }
+        print(response)
+        return response
+
+    # -- either: bad request OR database error
+    response = {
+        "message": "user delete error"
+    }
+    print(response)
+    return response
 
 @app.route('/getUser', method="POST")
 def getUser(db):
-    user_id = request.POST.get('user_id')
-    # row = fetchRow(db, table="users", )
+    try:
+        user_id = request.POST.get('user_id')
+    except KeyError:
+        response = {
+            "message": "missing paramater",
+            "required params": ["user_id"]
+        }
+        print(response)
+        return response
+
     params = {
         "table": "users",
         "where": "user_id=?",
@@ -191,29 +308,59 @@ def getUser(db):
     }
     row = fetchRow(db, **params)
 
+    if row:
+        response = {
+            "message": "user account details",
+            "data": clean(row)
+        }
+        print(response)
+        return response
+
+    # -- either: bad request OR database error
     response = {
-        "message": "user account details",
-        "data": clean(row)
+        "message": "user get error"
     }
     print(response)
     return response
 
+@app.route("/getUsers", method="GET")
+def getUsers(db):
+    """
+    This function is here for debugging purposes
+    """
+    params = {"table": "users"}
+    rows = fetchRows(db, **params)
+
+    response = {
+        "message": f"found {len(rows)} users",
+        "users": clean(rows)
+    }
+    print(response)
+    return response
 
 ###############################################################################
 #                           Oximeter Table Functions                          #
 ###############################################################################
 @app.route("/addSensorData", method="POST")
 def addSensorData(db):
-    user_id     = request.POST["user_id"]
-    heart_rate  = request.POST["heart_rate"]
-    blood_o2    = request.POST["blood_o2"]
-    temperature = request.POST["temperature"]
+    try:
+        user_id     = request.POST["user_id"]
+        heart_rate  = request.POST["heart_rate"]
+        blood_o2    = request.POST["blood_o2"]
+        temperature = request.POST["temperature"]
+    except KeyError:
+        response = {
+            "message": "missing paramater",
+            "required params": ["user_id", "heart_rate", "blood_o2", "temperature"]
+        }
+        print(response)
+        return response
     entry_time  = datetime.now()
 
     params = {
         "table": "oximeter",
         "columns": ["user_id", "heart_rate", "blood_o2", "temperature", "entry_time"],
-        "values": [user_id, heart_rate, blood_o2, temperature, entry_time]
+        "col_values": [user_id, heart_rate, blood_o2, temperature, entry_time]
     }
     entry_id = insertRow(db, **params)
 
@@ -227,17 +374,26 @@ def addSensorData(db):
 
 @app.route("/getSensorData", method=["POST"])
 def getSensorData(db):
-    user_id = request.POST["user_id"]
+    try:
+        user_id = request.POST["user_id"]
+    except KeyError:
+        response = {
+            "message": "missing paramater",
+            "required params": ["user_id"]
+        }
+        print(response)
+        return response
+
     params = {
         "table": "oximeter",
         "where": "user_id=?",
         "values": user_id
     }
-    row = fetchRows(db, **params)
+    row = fetchRow(db, **params)
 
     response = {
         "message": "sensor data for 'user_id'",
-        "data": clean(user_data)
+        "data": clean(row)
     }
     print(response)
     return response
@@ -250,11 +406,11 @@ def getAllSensorData(db):
     params = {
         "table": "oximeter"
     }
-    all_data = fetchRows(db, **params)
+    rows = fetchRows(db, **params)
 
     response = {
         "message": "sensor data for all users",
-        "data": clean(all_data)
+        "data": clean(rows)
     }
     print(response)
     return response
