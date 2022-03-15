@@ -50,6 +50,9 @@ pip3 install bottle
 ```
 
 ### 2.b Installing `bottle-sqlite`
+The `bottle-sqlite` library does not include `detect_types` which is needed for python `datetime` support.
+I copied the source code and added this functionality.
+
 ```bash
 pip3 install -U git+https://github.com/kkatayama/bottle-sqlite.git@master
 ```
@@ -63,7 +66,8 @@ sudo apt-get install sqlite3
 
 # APP Setup
 
-## 1. Database
+## 1. Database (Optional)
+These database steps are only needed if you did not do step `0.b`
 
 ### 1.a Create Database
 
@@ -107,7 +111,7 @@ Make a `GET` request to [http://raspberry-pi-ip-address:8080/](http://raspberry-
             }
         },
         {
-            "getAllSensorData": {
+            "/getAllSensorData": {
                 "Note": "debug function",
                 "Returns": "Sensor data for all users"
             }
@@ -153,19 +157,29 @@ Make a `GET` request to [http://raspberry-pi-ip-address:8080/](http://raspberry-
                     }
                 ]
             },
+            "/getUser": {
+                "Params": [
+                    "user_id"
+                ],
+                "Returns": [
+                    {
+                        "message": "user account details",
+                        "data": "json object of user info for 'user_id'"
+                    }
+                ]
+            },
             "/addSensorData": {
                 "Params": [
                     "user_id",
                     "heart_rate",
                     "blood_o2",
-                    "temperature",
-                    "entry_time"
+                    "temperature"
                 ],
                 "Returns": [
                     {
-                        "message": "data added",
+                        "message": "sensor data added for 'user_id'",
                         "user_id": "user_id",
-                        "entry_id": "entry_id"
+                        "row_id": "row_id"
                     }
                 ]
             },
@@ -175,8 +189,39 @@ Make a `GET` request to [http://raspberry-pi-ip-address:8080/](http://raspberry-
                 ],
                 "Returns": [
                     {
-                        "message": "user_data",
+                        "message": "sensor data for 'user_id'",
                         "data": "list of sensor data for 'user_id'"
+                    }
+                ]
+            }
+        }
+    ],
+    "POST|PUT": [
+        {
+            "/editUser": {
+                "Params": [
+                    "user_id",
+                    "username AND/OR password"
+                ],
+                "Returns": [
+                    {
+                        "message": "user edited",
+                        "user_id": "user_id"
+                    }
+                ]
+            }
+        }
+    ],
+    "POST|DELETE": [
+        {
+            "/deleteUser": {
+                "Params": [
+                    "user_id"
+                ],
+                "Returns": [
+                    {
+                        "message": "user deleted",
+                        "user_id": "user_id"
                     }
                 ]
             }
@@ -184,3 +229,4 @@ Make a `GET` request to [http://raspberry-pi-ip-address:8080/](http://raspberry-
     ]
 }
 ```
+

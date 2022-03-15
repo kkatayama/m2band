@@ -29,8 +29,8 @@ def index():
             "/getAllSensorData": {
                 "Note": "debug function",
                 "Returns": "Sensor data for all users"
-            }}
-        ],
+            }
+        }],
         "POST": [{
             "/login": {
                 "Params": ["username", "password"],
@@ -77,6 +77,24 @@ def index():
                 "Returns": [{
                     "message": "sensor data for 'user_id'",
                     "data": "list of sensor data for 'user_id'"
+                }]
+            }
+        }],
+        "POST|PUT": [{
+            "/editUser": {
+                "Params": ["user_id", "username AND/OR password"],
+                "Returns": [{
+                    "message": "user edited",
+                    "user_id": "user_id"
+                }]
+            }
+        }],
+        "POST|DELETE": [{
+            "/deleteUser": {
+                "Params" : ["user_id"],
+                "Returns": [{
+                    "message": "user deleted",
+                    "user_id": "user_id"
                 }]
             }
         }]
