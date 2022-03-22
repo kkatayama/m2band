@@ -23,11 +23,13 @@ def index():
 ###############################################################################
 #                            Users Table Functions                            #
 ###############################################################################
-@app.route("/login", method="POST")
+@app.route("/login", method=["GET", "POST"])
 def login(db):
     try:
-        username = request.POST["username"]
-        password = request.POST["password"]
+        username = eval(f"request.{request.method}.get('username')")
+        password = eval(f"request.{request.method}.get('password')")
+        # username = request.POST["username"]
+        # password = request.POST["password"]
     except KeyError:
         response = {
             "message": "missing paramater",
@@ -70,11 +72,13 @@ def login(db):
     print(response)
     return response
 
-@app.route("/createUser", method="POST")
+@app.route("/createUser", method=["GET", "POST"])
 def createUser(db):
     try:
-        username  = request.POST["username"]
-        plaintext = request.POST["password"]
+        username  = eval(f"request.{request.method}.get('username')")
+        plaintext = eval(f"request.{request.method}.get('password')")
+        # username  = request.POST["username"]
+        # plaintext = request.POST["password"]
     except KeyError:
         response = {
             "message": "missing paramater",
@@ -116,9 +120,9 @@ def createUser(db):
     print(response)
     return response
 
-@app.route("/editUser", method=["PUT", "POST"])
+@app.route("/editUser", method=["GET", "PUT", "POST"])
 def editUser(db):
-    user_id = eval(f"request.{request.method}.get('user_id')")
+    user_id   = eval(f"request.{request.method}.get('user_id')")
     username  = eval(f"request.{request.method}.get('username')")
     plaintext = eval(f"request.{request.method}.get('password')")
 
@@ -191,7 +195,7 @@ def editUser(db):
     print(response)
     return response
 
-@app.route('/deleteUser', method=["DELETE", "POST"])
+@app.route('/deleteUser', method=["GET", "DELETE", "POST"])
 def deleteUser(db):
     try:
         user_id = eval(f"request.{request.method}.get('user_id')")
@@ -225,10 +229,11 @@ def deleteUser(db):
     print(response)
     return response
 
-@app.route('/getUser', method="POST")
+@app.route('/getUser', method=["GET", "POST"])
 def getUser(db):
     try:
-        user_id = request.POST.get('user_id')
+        user_id  = eval(f"request.{request.method}.get('user_id')")
+        # user_id = request.POST.get('user_id')
     except KeyError:
         response = {
             "message": "missing paramater",
@@ -277,13 +282,17 @@ def getUsers(db):
 ###############################################################################
 #                           Oximeter Table Functions                          #
 ###############################################################################
-@app.route("/addSensorData", method="POST")
+@app.route("/addSensorData", method=["GET", "POST"])
 def addSensorData(db):
     try:
-        user_id     = request.POST["user_id"]
-        heart_rate  = request.POST["heart_rate"]
-        blood_o2    = request.POST["blood_o2"]
-        temperature = request.POST["temperature"]
+        user_id       = eval(f"request.{request.method}.get('user_id')")
+        heart_rate    = eval(f"request.{request.method}.get('heart_rate')")
+        blood_o2      = eval(f"request.{request.method}.get('blood_o2')")
+        temperature   = eval(f"request.{request.method}.get('temperature')")
+        # user_id     = request.POST["user_id"]
+        # heart_rate  = request.POST["heart_rate"]
+        # blood_o2    = request.POST["blood_o2"]
+        # temperature = request.POST["temperature"]
     except KeyError:
         response = {
             "message": "missing paramater",
@@ -308,10 +317,11 @@ def addSensorData(db):
     print(response)
     return response
 
-@app.route("/getSensorData", method=["POST"])
+@app.route("/getSensorData", method=["GET", "POST"])
 def getSensorData(db):
     try:
-        user_id = request.POST["user_id"]
+        user_id = eval(f"request.{request.method}.get('user_id')")
+        # user_id = request.POST["user_id"]
     except KeyError:
         response = {
             "message": "missing paramater",
