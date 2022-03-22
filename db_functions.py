@@ -112,7 +112,7 @@ def fetchRow(db, query="", **kwargs):
     else:
         table     = kwargs.get("table")
         columns   = "*" if not kwargs.get("columns") else ",".join(kwargs["columns"])
-        condition = "TRUE" if not kwargs.get("where") else f'({kwargs["where"]})'
+        condition = "1" if not kwargs.get("where") else f'({kwargs["where"]})'
         values    = [kwargs.get("values")] if isinstance(kwargs.get("values"), str) else kwargs.get("values")
         query = f"SELECT {columns} FROM {table} WHERE {condition};"
     print(query)
@@ -162,7 +162,7 @@ def fetchRows(db, query="", **kwargs):
     else:
         table     = kwargs.get("table")
         columns   = "*" if not kwargs.get("columns") else ",".join(kwargs["columns"])
-        condition = "TRUE" if not kwargs.get("where") else f'({kwargs["where"]})'
+        condition = "1" if not kwargs.get("where") else f'({kwargs["where"]})'
         values    = [kwargs.get("values")] if isinstance(kwargs.get("values"), str) else kwargs.get("values")
         query = f"SELECT {columns} FROM {table} WHERE {condition};"
     print(query)
