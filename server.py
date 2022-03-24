@@ -320,20 +320,21 @@ def addSensorData(db):
 @app.route("/getSensorData", method=["GET", "POST"])
 def getSensorData(db):
     try:
-        user_id = eval(f"request.{request.method}.get('user_id')")
         # user_id = request.POST["user_id"]
+        user_id  = eval(f"request.{request.method}.get('user_id')")
+        entry_id = eval(f"request.{request.method}.get('entry_id')")
     except KeyError:
         response = {
             "message": "missing paramater",
-            "required params": ["user_id"]
+            "required params": ["user_id", "entry_id"]
         }
         print(response)
         return response
 
     params = {
         "table": "oximeter",
-        "where": "user_id=?",
-        "values": user_id
+        "where": "user_id=? AND entry_id=?",
+        "values": [user_id, entry_id]
     }
     row = fetchRow(db, **params)
 
