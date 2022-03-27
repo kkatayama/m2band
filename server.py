@@ -578,5 +578,5 @@ def deleteSensorData(db):
 
 
 # -- Run Web Server
-port = int(os.environ.get("PORT", 8080))
+port = int(os.environ.get("PORT", 8280))
 run(app, host="0.0.0.0", port=port, reloader=True)
