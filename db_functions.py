@@ -15,11 +15,12 @@ All functions support a full SQL [query] or a python [dict]
 # -- checkPassword()    - check if password matches
 # -- clean()            - sanitize data for json delivery
 """
+from sqlite3 import ProgrammingError
 import hashlib
 import codecs
 import json
 import os
-
+import re
 
 ###############################################################################
 #                              CREATE OPERATIONS                              #
@@ -39,13 +40,19 @@ def insertRow(db, query="", **kwargs):
         lastrowid (int) OR False - the last ID for the transaction
 
     EXAMPLE: with [query]
-        user_id = insertRow(db, query="")
+        query = "INSERT INTO users (username,password,create_time) VALUES ("user_01", "user_01", "2022-03-15")"
+        user_id = insertRow(db, query=query)
 
     EXAMPLE: with [query] and [col_values]
-        user_id = insertRow(db, query="", col_values=[])
+        user_id = insertRow(db,
+                            query=INSERT INTO users (username,password,create_time) VALUES (?, ?, ?),
+                            col_values=["user_01", "user_01", "2022-03-15"])
 
     EXAMPLE: with [params] directly
-        user_id = insertRow(db, table="users", columns=["username", ...], col_values=["user1", ...])
+        user_id = insertRow(db,
+                            table="users",
+                            columns=["username", "password", "create_time"],
+                            col_values=["user_01", "user_01", "2022-03-15"])
 
     EXAMPLE: with [params] as (dict)
         params = {
@@ -66,7 +73,12 @@ def insertRow(db, query="", **kwargs):
     if col_values:
         print(" "*query.find("?"), col_values)
 
-    cur = db.execute(query, col_values) if col_values else db.execute(query)
+    try:
+        cur = db.execute(query, col_values) if col_values else db.execute(query)
+    except ProgrammingError as e:
+        print(e.args)
+        return {"ProgrammingError": e.args, "query": query, "col_values": col_values}
+
     if cur:
         return cur.lastrowid
     return False
@@ -119,7 +131,12 @@ def fetchRow(db, query="", **kwargs):
     if values:
         print(" "*query.find("?"), values)
 
-    row = db.execute(query, values).fetchone() if values else db.execute(query).fetchone()
+    try:
+        row = db.execute(query, values).fetchone() if values else db.execute(query).fetchone()
+    except ProgrammingError as e:
+        print(e.args)
+        return {"ProgrammingError": e.args, "query": query, "values": values}
+
     if row:
         return dict(row)
     return False
@@ -169,8 +186,15 @@ def fetchRows(db, query="", **kwargs):
     if values:
         print(" "*query.find("?"), values)
 
-    rows = db.execute(query, values).fetchall() if values else db.execute(query).fetchall()
+    try:
+        rows = db.execute(query, values).fetchall() if values else db.execute(query).fetchall()
+    except ProgrammingError as e:
+        print(e.args)
+        return {"ProgrammingError": e.args, "query": query, "values": values}
+
     if rows:
+        if len(rows) == 1:
+            return dict(rows[0])
         return [dict(row) for row in rows]
     return False
 
@@ -225,15 +249,21 @@ def updateRow(db, query="", **kwargs):
         values     = [kwargs.get("values")] if isinstance(kwargs.get("values"), str) else kwargs.get("values")
     else:
         table      = kwargs.get("table")
-        columns    = ", ".join([f"{col}=?" for col in kwargs["columns"]])
-        col_values = kwargs["col_values"]
+        # columns    = ", ".join([f"{col}=?" for col in kwargs["columns"]])
+        # col_values = kwargs["col_values"]
+        columns, col_values = parseColumnValues(kwargs["columns"], kwargs["col_values"])
         condition  = f'({kwargs["where"]})'
         values     = [kwargs["values"]] if isinstance(kwargs["values"], str) else kwargs["values"]
         query = f"UPDATE {table} SET {columns} WHERE {condition};"
     print(query)
     print(" "*query.find("?"), col_values, values)
 
-    cur = db.execute(query, col_values+values) if (col_values and values) else db.execute(query)
+    try:
+        cur = db.execute(query, col_values+values) if (col_values or values) else db.execute(query)
+    except ProgrammingError as e:
+        print(e.args)
+        return {"ProgrammingError": e.args, "query": query, "col_values": col_values, "values": values}
+
     return cur.rowcount
 
 ###############################################################################
@@ -246,7 +276,6 @@ def deleteRow(db, query="", **kwargs):
     ARGS:
         Required - db (object)          - the database connection object
         Optional - query (str)          - a complete SQL query
-
         Required - table (str)          - the table to delete data from
         Required - where (str)          - conditional "WHERE" statement
         Required - values (str|list)    - the value(s) for the "WHERE" statement
@@ -284,7 +313,12 @@ def deleteRow(db, query="", **kwargs):
     print(query)
     print(" "*query.find("?"), values)
 
-    cur = db.execute(query, values)
+    try:
+        cur = db.execute(query, values)
+    except ProgrammingError as e:
+        print(e.args)
+        return {"ProgrammingError": e.args, "query": query, "values": values}
+
     return cur.rowcount
 
 # Helper Functions ############################################################
@@ -309,3 +343,51 @@ def checkPassword(plaintext, hex_pass):
 
 def clean(data):
     return json.loads(json.dumps(data, default=str))
+
+def parseFilters(filters, conditions):
+    filter_conditions = ""
+    filter_values = []
+    regex = r'''
+        (?P<col>[a-zA-Z0-9_-]+) |                        # -- match column name
+        (?P<op>[!<>=]+) |                                # -- match operator (>, <, =, ==, !=, >=, <=, <>)
+        (?P<dt>(\"|\')([0-9a-zA-Z@_\-\ \:\.]+)(\"|\')) | # -- match "value" (datetime, integer, double)
+        \s+(?P<exp>(AND|OR))\s                           # -- match logical (AND, OR)
+    '''
+    r = re.compile(regex, re.VERBOSE)
+    for match in r.finditer(filters):
+        m = match.groupdict()
+        for k, v in m.items():
+            if v:
+                if k == "col":
+                    filter_conditions += f"{v}"
+                elif k == "op":
+                    filter_conditions += f" {v} ?"
+                elif k == "exp":
+                    filter_conditions += f" {v} "
+                else:
+                    filter_values.append(v.strip('"').strip("'"))
+    filter_conditions = filter_conditions.strip()
+    print(f'filter_conditions: {filter_conditions}')
+    print(f'filter_values: {filter_values}')
+
+    if conditions:
+        filter_conditions = f' AND {filter_conditions}'
+    else:
+        filter_conditions = filter_conditions
+    return filter_conditions, filter_values
+
+def parseColumnValues(cols, vals):
+    columns = ""
+    col_values = []
+    # -- check for expressions containing "column name"
+    for i, expression in enumerate([any([col in val for col in cols]) for val in vals]):
+        if expression:
+            columns += f"{cols[i]}={vals[i]}, "
+        else:
+            columns += f"{cols[i]}=?, "
+            col_values.append(vals[i])
+    columns = columns.strip(", ")
+
+    print(f"columns: '{columns}'")
+    print(f"col_values: {col_values}")
+    return columns, col_values
