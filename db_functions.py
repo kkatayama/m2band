@@ -15,6 +15,10 @@ All functions support a full SQL [query] or a python [dict]
 # -- checkPassword()    - check if password matches
 # -- clean()            - sanitize data for json delivery
 """
+from bottle import request, response
+from datetime import datetime
+from functools import wraps
+import logging
 import sqlite3
 import hashlib
 import codecs
@@ -321,8 +325,11 @@ def deleteRow(db, query="", **kwargs):
 
     return cur.rowcount
 
-# Helper Functions ############################################################
+###############################################################################
+#                               Helper Functions                              #
+###############################################################################
 
+# Utility Functions ###########################################################
 def securePassword(plaintext):
     salt = os.urandom(32)
     digest = hashlib.pbkdf2_hmac("sha256", plaintext.encode(), salt, 1000)
@@ -344,6 +351,7 @@ def checkPassword(plaintext, hex_pass):
 def clean(data):
     return json.loads(json.dumps(data, default=str))
 
+# Parsers #####################################################################
 def parseFilters(filters, conditions):
     filter_conditions = ""
     filter_values = []
@@ -391,3 +399,44 @@ def parseColumnValues(cols, vals):
     print(f"columns: '{columns}'")
     print(f"col_values: {col_values}")
     return columns, col_values
+
+# Logging #####################################################################
+# -- https://stackoverflow.com/questions/31080214/python-bottle-always-logs-to-console-no-logging-to-file
+def getLogger():
+    logger = logging.getLogger('m2band.py')
+
+    logger.setLevel(logging.INFO)
+    file_handler = logging.FileHandler('m2band.log')
+    formatter = logging.Formatter('%(msg)s')
+    file_handler.setLevel(logging.DEBUG)
+    file_handler.setFormatter(formatter)
+    logger.addHandler(file_handler)
+    return logger
+
+def log_to_logger(fn):
+    '''
+    Wrap a Bottle request so that a log line is emitted after it's handled.
+    (This decorator can be extended to take the desired logger as a param.)
+    '''
+    @wraps(fn)
+    def _log_to_logger(*args, **kwargs):
+        request_time = datetime.now()
+        actual_response = fn(*args, **kwargs)
+        ip_address = (
+            request.environ.get('HTTP_X_FORWARDED_FOR')
+            or request.environ.get('REMOTE_ADDR')
+            or request.remote_addr
+        )
+        logger.info('%s %s %s %s %s' % (ip_address,
+                                        request_time,
+                                        request.method,
+                                        request.url,
+                                        response.status))
+        if isinstance(actual_response, dict):
+            logger.info(json.dumps(actual_response, default=str, indent=2))
+        else:
+            logger.info(actual_response)
+        return actual_response
+    return _log_to_logger
+
+logger = getLogger()

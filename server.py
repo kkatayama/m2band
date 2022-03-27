@@ -1,7 +1,7 @@
 from bottle import Bottle, request, run, template
 from bottle_sqlite import SQLitePlugin, sqlite3
-from db_functions import *
 from datetime import datetime
+from db_functions import *
 # from rich.traceback import install
 # from rich import print, inspect, print_json, pretty
 import json
@@ -12,13 +12,14 @@ import os
 app = Bottle()
 plugin = SQLitePlugin(dbfile="m2band.db", detect_types=sqlite3.PARSE_DECLTYPES|sqlite3.PARSE_COLNAMES)
 app.install(plugin)
+app.install(log_to_logger)
 
 @app.route("/", method=["GET", "POST", "PUT", "DELETE"])
 def index():
     with open('all_commands.js') as f:
-        response = json.load(f)
-    print(response)
-    return response
+        res = json.load(f)
+    print(res)
+    return res
 
 ###############################################################################
 #                            Users Table Functions                            #
@@ -35,13 +36,13 @@ def login(db):
         username = params["username"]
         password = params["password"]
     except KeyError:
-        response = {
+        res = {
             "message": "missing paramater",
             "required_params": required_params,
             "your_params": dict(request.params),
         }
-        print(response)
-        return response
+        print(res)
+        return res
 
     # Check if user exists ####################################################
     # -- build "conditions" string and "values" string/array for "fetchRow()"
@@ -60,35 +61,35 @@ def login(db):
     }
     row = fetchRow(db, **params)
 
-    # -- process the database response
+    # -- process the database res
     # -- row contains a value if the "username" exists in the [users] table
     if not row:
-        response = {
+        res = {
             "message": "user does not exist",
             "username": username
         }
-        print(response)
-        return response
+        print(res)
+        return res
 
     # -- check user supplied password (previous row statement has user data for username=[username])
     if not checkPassword(password, row["password"]):
         # -- checkPassword() returned False
-        response = {
+        res = {
             "message": "incorrect password",
             "password": password
         }
-        print(response)
-        return response
+        print(res)
+        return res
 
     # -- made it here: means username exists and checkPassword() returned True
-    # -- process the database response
-    response = {
+    # -- process the database res
+    res = {
         "message": "user login success",
         "user_id": row["user_id"],
         "username": row["username"]
     }
-    print(response)
-    return response
+    print(res)
+    return res
 
 @app.route("/addUser", method=["GET", "POST", "PUT", "DELETE"])
 @app.route("/createUser", method=["GET", "POST", "PUT", "DELETE"])
@@ -103,13 +104,13 @@ def addUser(db):
         username  = params["username"]
         plaintext = params["password"]
     except KeyError:
-        response = {
+        res = {
             "message": "missing paramater",
             "required_params": required_params,
             "your_params": dict(request.params),
         }
-        print(response)
-        return response
+        print(res)
+        return res
     # -- local variables (process "plaintext" and "create_time")
     password    = securePassword(plaintext)
     create_time = datetime.now()
@@ -129,15 +130,15 @@ def addUser(db):
     }
     row = fetchRow(db, **params)
 
-    # -- process the database response
+    # -- process the database res
     # -- row would only contain a value if the "username" exists in the [users] table
     if row:
-        response = {
+        res = {
             "message": "user exists",
             "username": row["username"]
         }
-        print(response)
-        return response
+        print(res)
+        return res
 
     # If user doesn't exist, create user ######################################
     # -- define "columns" to edit and "values" to insert
@@ -153,18 +154,18 @@ def addUser(db):
     }
     user_id = insertRow(db, **params)
 
-    # -- process the database response
+    # -- process the database res
     if isinstance(user_id, dict):
         if user_id.get('ProgrammingError'):
             print(rows)
             return rows
-    response = {
+    res = {
         "message": "user created",
         "user_id": user_id,
         "username": username
     }
-    print(response)
-    return response
+    print(res)
+    return res
 
 @app.route("/getUser", method=["GET", "POST", "PUT", "DELETE"])
 @app.route("/getUsers", method=["GET", "POST", "PUT", "DELETE"])
@@ -194,7 +195,7 @@ def getUser(db):
     }
     rows = fetchRows(db, **params)
 
-    # -- process the database response
+    # -- process the database res
     if isinstance(rows, dict):
         if rows.get('ProgrammingError'):
             print(rows)
@@ -204,20 +205,20 @@ def getUser(db):
         message = f"found {len(rows)} users"
 
     if rows:
-        response = {
+        res = {
             "message": message,
             "data": clean(rows)
         }
-        print(response)
-        return response
+        print(res)
+        return res
 
     # -- found 0 users
-    response = {
+    res = {
         "message": "found 0 users",
         "your_params": dict(request.params)
     }
-    print(response)
-    return response
+    print(res)
+    return res
 
 @app.route("/editUser", method=["GET", "POST", "PUT", "DELETE"])
 def editUser(db):
@@ -233,14 +234,14 @@ def editUser(db):
         if not any(params.get(k) for k in editable_columns):
             raise KeyError
     except KeyError:
-        response = {
+        res = {
             "message": "missing paramater",
             "required_params": required_params,
             "editable param(s)": editable_columns,
             "your_params": dict(request.params),
         }
-        print(response)
-        return response
+        print(res)
+        return res
 
     # -- local variables
     username  = params.get("username")
@@ -268,27 +269,27 @@ def editUser(db):
     }
     num_edits = updateRow(db, **params)
 
-    # -- process the database response
+    # -- process the database res
     if isinstance(num_edits, dict):
         if num_edits.get('ProgrammingError'):
             print(num_edits)
             return num_edits
 
     if num_edits:
-        response = {
+        res = {
             "message": f"user edited",
             "user_id": user_id
         }
-        print(response)
-        return response
+        print(res)
+        return res
 
     # -- user not found
-    response = {
+    res = {
         "message": "user not found",
         "your_params": dict(request.params)
     }
-    print(response)
-    return response
+    print(res)
+    return res
 
 @app.route('/deleteUser', method=["GET", "POST", "PUT", "DELETE"])
 def deleteUser(db):
@@ -300,13 +301,13 @@ def deleteUser(db):
     try:
         user_id = params["user_id"]
     except KeyError:
-        response = {
+        res = {
             "message": "missing paramater",
             "required_params": required_params,
             "your_params": dict(request.params),
         }
-        print(response)
-        return response
+        print(res)
+        return res
 
     # -- build "conditions" string and "values" string/array for "deleteRow()"
     conditions = " AND ".join([f"{param}=?" for param in required_params])
@@ -321,26 +322,26 @@ def deleteUser(db):
     }
     num_deletes = deleteRow(db, **params)
 
-    # -- process the database response
+    # -- process the database res
     if isinstance(num_deletes, dict):
         if num_deletes.get('ProgrammingError'):
             print(num_deletes)
             return num_deletes
 
     if num_deletes:
-        response = {
+        res = {
             "message": "user deleted",
             "user_id": user_id
         }
-        print(response)
-        return response
+        print(res)
+        return res
 
     # -- either: bad request OR database error
-    response = {
+    res = {
         "message": "user delete error"
     }
-    print(response)
-    return response
+    print(res)
+    return res
 
 ###############################################################################
 #                           Oximeter Table Functions                          #
@@ -358,13 +359,13 @@ def addSensorData(db):
         blood_o2    = params["blood_o2"]
         temperature = params["temperature"]
     except KeyError:
-        response = {
+        res = {
             "message": "missing paramater",
             "required_params": required_params,
             "your_params": dict(request.params),
         }
-        print(response)
-        return response
+        print(res)
+        return res
     entry_time = datetime.now()
 
     # -- define "columns" to edit and "values" to insert
@@ -379,18 +380,18 @@ def addSensorData(db):
     }
     entry_id = insertRow(db, **params)
 
-    # -- process the database response
+    # -- process the database res
     if isinstance(entry_id, dict):
         if entry_id.get('ProgrammingError'):
             print(rows)
             return rows
-    response = {
+    res = {
         "message": "sensor data added",
         "user_id": user_id,
         "entry_id": entry_id
     }
-    print(response)
-    return response
+    print(res)
+    return res
 
 @app.route("/getSensorData", method=["GET", "POST", "PUT", "DELETE"])
 @app.route("/getAllSensorData", method=["GET", "POST", "PUT", "DELETE"])
@@ -420,7 +421,7 @@ def getSensorData(db):
     }
     rows = fetchRows(db, **params)
 
-    # -- process the database response
+    # -- process the database res
     if isinstance(rows, dict):
         if rows.get('ProgrammingError'):
             print(rows)
@@ -430,20 +431,20 @@ def getSensorData(db):
         message = f"found {len(rows)} entries"
 
     if rows:
-        response = {
+        res = {
             "message": message,
             "data": clean(rows)
         }
-        print(response)
-        return response
+        print(res)
+        return res
 
     # -- found 0 entries
-    response = {
+    res = {
         "message": "found 0 entries",
         "your_params": dict(request.params)
     }
-    print(response)
-    return response
+    print(res)
+    return res
 
 @app.route("/editSensorData", method=["GET", "POST", "PUT", "DELETE"])
 def editSensorData(db):
@@ -461,15 +462,15 @@ def editSensorData(db):
         if not any(params.get(k) for k in editable_columns):
             raise KeyError
     except KeyError:
-        response = {
+        res = {
             "message": "missing paramaters",
             "required_params": required_params,
             "editable_param(s)": editable_columns,
             "optional_param(s)": ["entry_id", "filter"],
             "your_params": dict(request.params),
         }
-        print(response)
-        return response
+        print(res)
+        return res
 
     # -- local variables
     heart_rate  = params.get("heart_rate")
@@ -499,21 +500,21 @@ def editSensorData(db):
     }
     num_edits = updateRow(db, **params)
 
-    # -- process the database response
+    # -- process the database res
     if isinstance(num_edits, dict):
         if num_edits.get('ProgrammingError'):
             print(num_edits)
             return num_edits
 
     if num_edits:
-        response = {
+        res = {
             "message": f"{num_edits} entries edited for 'user_id = {user_id}'"
         }
-        print(response)
-        return response
+        print(res)
+        return res
 
     # -- no entries edited
-    response = {
+    res = {
         "message": "found no entries matching your parameters",
         "your_params": dict(request.params)
     }
@@ -531,14 +532,14 @@ def deleteSensorData(db):
     try:
         user_id = params["user_id"]
     except KeyError:
-        response = {
+        res = {
             "message": "missing paramater(s)",
             "required_params": required_params,
             "optional params": ["entry_id", "filter"],
             "your_params": dict(request.params),
         }
-        print(response)
-        return response
+        print(res)
+        return res
     entry_id = params.get("entry_id")
 
     # -- build "conditions" string and "values" string/array for "deleteRow()"
@@ -557,21 +558,21 @@ def deleteSensorData(db):
     }
     num_deletes = deleteRow(db, **params)
 
-    # -- process the database response
+    # -- process the database res
     if isinstance(num_deletes, dict):
         if num_deletes.get('ProgrammingError'):
             print(num_deletes)
             return num_deletes
 
     if num_deletes:
-        response = {
+        res = {
             "message": f"deleted {num_deletes} sensor data entries"
         }
-        print(response)
-        return response
+        print(res)
+        return res
 
         # -- no entries edited
-    response = {
+    res = {
         "message": "found no entries to delete matching your parameters",
         "your_params": dict(request.params)
     }
