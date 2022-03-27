@@ -75,7 +75,7 @@ def insertRow(db, query="", **kwargs):
 
     try:
         cur = db.execute(query, col_values) if col_values else db.execute(query)
-    except sqlite3.ProgrammingError as e:
+    except (sqlite3.ProgrammingError, sqlite3.OperationalError) as e:
         print(e.args)
         return {"ProgrammingError": e.args, "query": query, "col_values": col_values}
 
@@ -133,7 +133,7 @@ def fetchRow(db, query="", **kwargs):
 
     try:
         row = db.execute(query, values).fetchone() if values else db.execute(query).fetchone()
-    except sqlite3.ProgrammingError as e:
+    except (sqlite3.ProgrammingError, sqlite3.OperationalError) as e:
         print(e.args)
         return {"ProgrammingError": e.args, "query": query, "values": values}
 
@@ -188,7 +188,7 @@ def fetchRows(db, query="", **kwargs):
 
     try:
         rows = db.execute(query, values).fetchall() if values else db.execute(query).fetchall()
-    except sqlite3.ProgrammingError as e:
+    except (sqlite3.ProgrammingError, sqlite3.OperationalError) as e:
         print(e.args)
         return {"ProgrammingError": e.args, "query": query, "values": values}
 
@@ -260,7 +260,7 @@ def updateRow(db, query="", **kwargs):
 
     try:
         cur = db.execute(query, col_values+values) if (col_values or values) else db.execute(query)
-    except sqlite3.ProgrammingError as e:
+    except (sqlite3.ProgrammingError, sqlite3.OperationalError) as e:
         print(e.args)
         return {"ProgrammingError": e.args, "query": query, "col_values": col_values, "values": values}
 
@@ -315,7 +315,7 @@ def deleteRow(db, query="", **kwargs):
 
     try:
         cur = db.execute(query, values)
-    except sqlite3.ProgrammingError as e:
+    except (sqlite3.ProgrammingError, sqlite3.OperationalError) as e:
         print(e.args)
         return {"ProgrammingError": e.args, "query": query, "values": values}
 

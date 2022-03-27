@@ -271,8 +271,8 @@ def editUser(db):
     # -- process the database response
     if isinstance(num_edits, dict):
         if num_edits.get('ProgrammingError'):
-            print(rows)
-            return rows
+            print(num_edits)
+            return num_edits
 
     if num_edits:
         response = {
@@ -324,8 +324,8 @@ def deleteUser(db):
     # -- process the database response
     if isinstance(num_deletes, dict):
         if num_deletes.get('ProgrammingError'):
-            print(rows)
-            return rows
+            print(num_deletes)
+            return num_deletes
 
     if num_deletes:
         response = {
@@ -502,8 +502,8 @@ def editSensorData(db):
     # -- process the database response
     if isinstance(num_edits, dict):
         if num_edits.get('ProgrammingError'):
-            print(rows)
-            return rows
+            print(num_edits)
+            return num_edits
 
     if num_edits:
         response = {
@@ -560,8 +560,8 @@ def deleteSensorData(db):
     # -- process the database response
     if isinstance(num_deletes, dict):
         if num_deletes.get('ProgrammingError'):
-            print(rows)
-            return rows
+            print(num_deletes)
+            return num_deletes
 
     if num_deletes:
         response = {
