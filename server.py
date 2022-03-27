@@ -13,7 +13,7 @@ app = Bottle()
 plugin = SQLitePlugin(dbfile="m2band.db", detect_types=sqlite3.PARSE_DECLTYPES|sqlite3.PARSE_COLNAMES)
 app.install(plugin)
 
-@app.route("/")
+@app.route("/", method=["GET", "POST", "PUT", "DELETE"])
 def index():
     with open('all_commands.js') as f:
         response = json.load(f)
