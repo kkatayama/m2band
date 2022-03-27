@@ -433,7 +433,8 @@ def log_to_logger(fn):
                                         request.url,
                                         response.status))
         if isinstance(actual_response, dict):
-            logger.info(json.dumps(actual_response, default=str, indent=2))
+            if not actual_response.get("message") == "available commands":
+                logger.info(json.dumps(actual_response, default=str, indent=2))
         else:
             logger.info(actual_response)
         return actual_response
