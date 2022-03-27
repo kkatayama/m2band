@@ -418,6 +418,8 @@ def getSensorData(db):
         "where": conditions,
         "values": values
     }
+    print(f'request.params = {dict(request.params)}')
+    print(f'params = {params}')
     rows = fetchRow(db, **params)
 
     # -- process the database response
