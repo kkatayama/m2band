@@ -1,7 +1,12 @@
+from pathlib import Path
 import subprocess
+import os
 
 # GitHub Updates ##############################################################
+profile = Path(os.path.expanduser('~'), '.zshrc').as_posix()
+os.chdir(Path.cwd().as_posix())
 cmds = [
+    f"source {profile}",
     "git add -A",
     "git commit -am 'update database'",
     "git push origin main",
