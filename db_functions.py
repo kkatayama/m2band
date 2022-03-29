@@ -18,6 +18,7 @@ All functions support a full SQL [query] or a python [dict]
 from bottle import request, response
 from datetime import datetime
 from functools import wraps
+import subprocess
 import logging
 import sqlite3
 import hashlib
@@ -441,3 +442,11 @@ def log_to_logger(fn):
     return _log_to_logger
 
 logger = getLogger()
+
+# GitHub Updates ##############################################################
+def updateGitHub():
+    cmd = "git add m2band.db && git commit -am 'update database' && git push"
+    print(cmd)
+
+    out = subprocess.run(cmd, shell=True, capture_output=True, text=True).stdout.strip()
+    print(out)
