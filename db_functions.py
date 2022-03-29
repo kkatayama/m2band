@@ -445,7 +445,7 @@ logger = getLogger()
 
 # GitHub Updates ##############################################################
 def updateGitHub():
-    cmd = "git add m2band.db && git commit -am 'update database' && git push"
+    cmd = "git add -A && git commit -am 'update database' && git push"
     print(cmd)
 
     out = subprocess.run(cmd, shell=True, capture_output=True, text=True).stdout.strip()
