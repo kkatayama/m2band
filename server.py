@@ -1,4 +1,4 @@
-from bottle import Bottle, request, run, template
+from bottle import Bottle, run, request  #  , response
 from bottle_sqlite import SQLitePlugin, sqlite3
 from datetime import datetime
 from db_functions import *
@@ -22,7 +22,7 @@ def index():
     return res
 
 ###############################################################################
-#                            Users Table Functions                            #
+#                      User's Table: Additional Functions                     #
 ###############################################################################
 @app.route("/login", method=["GET", "POST", "PUT", "DELETE"])
 def login(db):
@@ -91,6 +91,18 @@ def login(db):
     print(res)
     return res
 
+@app.route("/logout", method=["GET", "POST", "PUT", "DELETE"])
+def logout(db):
+    res = {
+        "message": "user logged out"
+    }
+    # response.delete_cookie("user_id")
+    print(res)
+    return res
+
+###############################################################################
+#                         User's Table: Core Functions                        #
+###############################################################################
 @app.route("/addUser", method=["GET", "POST", "PUT", "DELETE"])
 @app.route("/createUser", method=["GET", "POST", "PUT", "DELETE"])
 def addUser(db):
@@ -344,7 +356,7 @@ def deleteUser(db):
     return res
 
 ###############################################################################
-#                           Oximeter Table Functions                          #
+#                        Oximeter Table: Core Functions                       #
 ###############################################################################
 @app.route("/addSensorData", method=["GET", "POST", "PUT", "DELETE"])
 def addSensorData(db):
