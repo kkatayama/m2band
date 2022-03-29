@@ -23,6 +23,7 @@ import logging
 import sqlite3
 import hashlib
 import codecs
+import time
 import json
 import os
 import re
@@ -445,8 +446,14 @@ logger = getLogger()
 
 # GitHub Updates ##############################################################
 def updateGitHub():
-    cmd = "git add -A && git commit -am 'update database' && git push"
-    print(cmd)
+    cmds = [
+        "git add -A",
+        "git commit -am 'update database'",
+        "git push",
+    ]
+    for cmd in cmds:
+        print(cmd)
 
-    out = subprocess.run(cmd, shell=True, capture_output=True, text=True).stdout.strip()
-    print(out)
+        out = subprocess.run(cmd, shell=True, capture_output=True, text=True).stdout.strip()
+        print(out)
+        time.sleep(0.2)
