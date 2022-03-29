@@ -447,13 +447,16 @@ logger = getLogger()
 # GitHub Updates ##############################################################
 def updateGitHub():
     cmds = [
-        "git add -a",
+        "git add -A",
         "git commit -am 'update database'",
         "git push origin main",
     ]
     for cmd in cmds:
         print(cmd)
 
-        out = subprocess.run(cmd, shell=True, capture_output=True, text=True).stdout.strip()
+        # out = subprocess.run(cmd, shell=True, capture_output=True, text=True).stdout.strip()
+        proc = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, shell=True)
+        (out, err) = proc.communicate()
         print(out)
-        time.sleep(0.2)
+        print(err)
+        time.sleep(0.1)
