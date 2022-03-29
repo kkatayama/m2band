@@ -455,8 +455,9 @@ def updateGitHub():
         print(cmd)
 
         # out = subprocess.run(cmd, shell=True, capture_output=True, text=True).stdout.strip()
-        proc = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, shell=True)
-        (out, err) = proc.communicate()
-        print(out)
-        print(err)
+        # proc = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, shell=True)
+        # (out, err) = proc.communicate()
+        # print(out)
+        # print(err)
+        os.system(cmd)
         time.sleep(0.1)
