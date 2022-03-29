@@ -447,7 +447,7 @@ logger = getLogger()
 # GitHub Updates ##############################################################
 def updateGitHub():
     cmds = [
-        "git add -A",
+        "git add -a",
         "git commit -am 'update database'",
         "git push origin main",
     ]
