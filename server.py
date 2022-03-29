@@ -164,7 +164,6 @@ def addUser(db):
         "user_id": user_id,
         "username": username
     }
-    updateGitHub()
     print(res)
     return res
 
@@ -281,7 +280,6 @@ def editUser(db):
             "message": f"user edited",
             "user_id": user_id
         }
-        updateGitHub()
         print(res)
         return res
 
@@ -335,7 +333,6 @@ def deleteUser(db):
             "message": "user deleted",
             "user_id": user_id
         }
-        updateGitHub()
         print(res)
         return res
 

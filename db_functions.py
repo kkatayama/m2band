@@ -445,11 +445,3 @@ def log_to_logger(fn):
 
 logger = getLogger()
 
-# GitHub Updates ##############################################################
-def updateGitHub():
-    cmd = "python3 update_github.py"
-    print(cmd)
-
-    out = subprocess.run(cmd, shell=True, capture_output=True, text=True)
-    print(out.stdout.strip())
-    print(out.stderr.strip())
