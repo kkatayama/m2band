@@ -18,6 +18,7 @@ All functions support a full SQL [query] or a python [dict]
 from bottle import request, response
 from datetime import datetime
 from functools import wraps
+from pathlib import Path
 import subprocess
 import logging
 import sqlite3
@@ -446,20 +447,6 @@ logger = getLogger()
 
 # GitHub Updates ##############################################################
 def updateGitHub():
-    # cmds = [
-    #     "git add -A",
-    #     "git commit -am 'update database'",
-    #     "git push origin main",
-    # ]
-    # for cmd in cmds:
-    #     print(cmd)
-
-    #     # out = subprocess.run(cmd, shell=True, capture_output=True, text=True).stdout.strip()
-    #     # proc = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, shell=True)
-    #     # (out, err) = proc.communicate()
-    #     # print(out)
-    #     # print(err)
-    #     os.system(cmd)
-    #     time.sleep(0.1)
-    cmd = 'git add -A && git commit -am "update db" && git push'
-    os.system(cmd)
+    cmd = "python3 update_github.py"
+    print(cmd)
+    print(out)
