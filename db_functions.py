@@ -449,4 +449,7 @@ logger = getLogger()
 def updateGitHub():
     cmd = "python3 update_github.py"
     print(cmd)
-    print(out)
+
+    out = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+    print(out.stdout.strip())
+    print(out.stderr.strip())
