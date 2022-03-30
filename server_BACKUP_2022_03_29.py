@@ -107,14 +107,15 @@ def logout(db):
 @app.route("/createUser", method=["GET", "POST", "PUT", "DELETE"])
 def addUser(db):
     table = "users"
+    required_params  = ["username", "password"]
 
     # -- parse "params" from HTTP request
-    # required_params = ["username", "password"]
-    required_params   = getColumns(db, table, required=True)
-    insertable_params = getColumns(db, table, insertable=True)
     params = {k:v for (k,v) in request.params.items() if k in required_params}
-
-    if not any(params.get(k) for k in required_params):
+    try:
+        # -- local variables (only contains value if passed in request)
+        username  = params["username"]
+        plaintext = params["password"]
+    except KeyError:
         res = {
             "message": "missing paramater",
             "required_params": required_params,
@@ -122,27 +123,24 @@ def addUser(db):
         }
         print(res)
         return res
-
-    # -- update params to include encrypted "password"
-    params.update({
-        "password": securePassword(params["password"])
-    })
-    #    "create_time": datetime.now()
+    # -- local variables (process "plaintext" and "create_time")
+    password    = securePassword(plaintext)
+    create_time = datetime.now()
 
     # Check if user exists ####################################################
     # -- build "conditions" string and "values" string/array for "fetchRow()"
     conditions = "username=?"
-    values = params["username"]
+    values = username
 
     # -- query database
     # -- SELECT * FROM users WHERE username=?;
     # -- ? = params["username"]
-    args = {
+    params = {
         "table": table,
         "where": conditions,
         "values": values
     }
-    row = fetchRow(db, **args)
+    row = fetchRow(db, **params)
 
     # -- process the database res
     # -- row would only contain a value if the "username" exists in the [users] table
@@ -156,29 +154,27 @@ def addUser(db):
 
     # If user doesn't exist, create user ######################################
     # -- define "columns" to edit and "values" to insert
-    columns    = [column for column in required_params if params.get(column)]
-    col_values = [params[column] for column in columns]
+    columns  = ["username", "password", "create_time"]
+    col_vals = [username, password, create_time]
 
     # -- query database
     # -- INSERT INTO users (username,password,create_time) VALUES (?, ?, ?);
-    args = {
+    params = {
         "table": table,
         "columns": columns,
-        "col_values": col_values,
+        "col_values": col_vals,
     }
-    user_id = insertRow(db, **args)
+    user_id = insertRow(db, **params)
 
     # -- process the database res
     if isinstance(user_id, dict):
         if user_id.get('ProgrammingError'):
             print(rows)
             return rows
-
-    # -- send response message
     res = {
         "message": "user created",
         "user_id": user_id,
-        "username": params["username"]
+        "username": username
     }
     print(res)
     return res
@@ -187,30 +183,31 @@ def addUser(db):
 @app.route("/getUsers", method=["GET", "POST", "PUT", "DELETE"])
 def getUser(db):
     table = "users"
+    params_options = ["user_id", "username", "password", "create_time"]
+    filter_options = ["filter"]
 
     # -- parse parameters and filters from HTTP request
-    all_params = getColumns(db, table)
-    params  = {k:v for (k,v) in request.params.items() if k in all_params}
-    filters = request.params.get("filter")
+    params  = {k:v for (k,v) in request.params.items() if k in params_options}
+    filters = {k:v for (k,v) in request.params.items() if k in filter_options}
 
     # -- build "conditions" string and "values" array for "fetchRows()"
     conditions = " AND ".join([f"{option}=?" for option in params.keys()])
     values     = list(params.values())
-    if filters:
-        filter_conditions, filter_values = parseFilters(filters, conditions)
+    if filters.get("filter"):
+        filter_conditions, filter_values = parseFilters(filters["filter"], conditions)
         conditions = conditions + filter_conditions
         values     = values + filter_values
 
     # -- query database
     # -- SELECT * FROM users WHERE (user_id=?);
-    args = {
+    params = {
         "table": table,
         "where": conditions,
         "values": values
     }
-    rows = fetchRows(db, **args)
+    rows = fetchRows(db, **params)
 
-    # -- process the database response
+    # -- process the database res
     if isinstance(rows, dict):
         if rows.get('ProgrammingError'):
             print(rows)
@@ -218,85 +215,89 @@ def getUser(db):
         message = f"found 1 user"
     elif isinstance(rows, list):
         message = f"found {len(rows)} users"
-    else:
-        message = "found 0 users"
-        rows = {"your_params": dict(request.params)}
 
-    # -- send response message
+    if rows:
+        res = {
+            "message": message,
+            "data": clean(rows)
+        }
+        print(res)
+        return res
+
+    # -- found 0 users
     res = {
-        "message": message,
-        "data": clean(rows)
+        "message": "found 0 users",
+        "your_params": dict(request.params)
     }
     print(res)
     return res
 
-
 @app.route("/editUser", method=["GET", "POST", "PUT", "DELETE"])
 def editUser(db):
     table = "users"
+    required_params  = ["user_id"]
+    editable_columns = ["username", "password"]
+    params_options   = ["user_id", "username", "password"]
 
     # -- parse "params" from HTTP request
-    all_params = getColumns(db, table)
-    editable_params  = getColumns(db, table, editable=True)
-    non_edit_params = getColumns(db, table, non_editable=True)
-    params  = {k:v for (k,v) in request.params.items() if k in all_params}
-    filters = request.params.get("filter")
-
-    if not any(params.get(k) for k in editable_params):
+    params = {k:v for (k,v) in request.params.items() if k in params_options}
+    try:
+        user_id = params["user_id"]
+        if not any(params.get(k) for k in editable_columns):
+            raise KeyError
+    except KeyError:
         res = {
-            "message": "missing at least 1 edit paramater",
-            "non_edit_params": non_edit_params,
-            "edit param(s)": editable_params,
+            "message": "missing paramater",
+            "required_params": required_params,
+            "editable param(s)": editable_columns,
             "your_params": dict(request.params),
         }
         print(res)
         return res
 
-    # -- if "password" is supplied, update params to include encrypted "password"
-    if params.get("password"):
-        params.update({
-            "password": securePassword(params["password"])
-        })
+    # -- local variables
+    username  = params.get("username")
+    plaintext = params.get("password")
+    if plaintext:
+        password = securePassword(plaintext)
+        params.update({"password": password})
 
     # -- define "columns" to edit and "values" to insert (parsed from params in HTTP request)
-    columns    = [column for column in editable_params if params.get(column)]
+    columns    = [column for column in editable_columns if params.get(column)]
     col_values = [params[column] for column in columns]
 
     # -- build "conditions" string and "values" string/array for "updateRow()"
-    conditions = " AND ".join([f"{param}=?" for param in non_edit_params if params.get(param)])
-    values     = [params[param] for param in non_edit_params if params.get(param)]
-    if filters:
-        filter_conditions, filter_values = parseFilters(filters, conditions)
-        conditions = conditions + filter_conditions
-        values     = values + filter_values
+    conditions = " AND ".join([f"{param}=?" for param in required_params])
+    values     = [params[param] for param in required_params]
 
     # -- query database
     # -- UPDATE users SET username=? WHERE (user_id=?);
-    args = {
+    params = {
         "table": table,
         "columns": columns,
         "col_values": col_values,
         "where": conditions,
         "values": values
     }
-    num_edits = updateRow(db, **args)
+    num_edits = updateRow(db, **params)
 
     # -- process the database res
     if isinstance(num_edits, dict):
         if num_edits.get('ProgrammingError'):
             print(num_edits)
             return num_edits
-    elif num_edits:
-        if num_edits == 1:
-            message = "1 user edited"
-        else:
-            message = f"{num_edits} users edited"
-    else:
-        message = "0 users found matching your parameters"
 
-    # -- send response message
+    if num_edits:
+        res = {
+            "message": f"user edited",
+            "user_id": user_id
+        }
+        print(res)
+        return res
+
+    # -- user not found
     res = {
-        "message": message,
+        "message": "user not found",
         "your_params": dict(request.params)
     }
     print(res)
@@ -305,55 +306,51 @@ def editUser(db):
 @app.route('/deleteUser', method=["GET", "POST", "PUT", "DELETE"])
 def deleteUser(db):
     table = "users"
+    required_params = ["user_id"]
 
-    # -- parse "params" and "filters" from HTTP request
-    all_params = getColumns(db, table)
-    params  = {k:v for (k,v) in request.params.items() if k in all_params}
-    filters = request.params.get("filter")
-
-    if ((not any(params.get(k) for k in all_params)) and (not filters)):
+    # -- parse "params" from HTTP request
+    params = {k:v for (k,v) in request.params.items() if k in required_params}
+    try:
+        user_id = params["user_id"]
+    except KeyError:
         res = {
-            "message": "missing at least 1 paramater or filter",
-            "all_params": all_params,
+            "message": "missing paramater",
+            "required_params": required_params,
             "your_params": dict(request.params),
         }
         print(res)
         return res
 
     # -- build "conditions" string and "values" string/array for "deleteRow()"
-    conditions = " AND ".join([f"{param}=?" for param in all_params if params.get(param)])
-    values     = [params[param] for param in all_params if params.get(param)]
-    if filters:
-        filter_conditions, filter_values = parseFilters(filters, conditions)
-        conditions = conditions + filter_conditions
-        values     = values + filter_values
+    conditions = " AND ".join([f"{param}=?" for param in required_params])
+    values     = [params[param] for param in required_params]
 
     # -- query database
     # -- DELETE FROM users WHERE (user_id=?);
-    args = {
+    params = {
         "table": table,
         "where": conditions,
         "values": values
     }
-    num_deletes = deleteRow(db, **args)
+    num_deletes = deleteRow(db, **params)
 
     # -- process the database res
     if isinstance(num_deletes, dict):
         if num_deletes.get('ProgrammingError'):
             print(num_deletes)
             return num_deletes
-    elif num_deletes:
-        if num_deletes == 1:
-            message = "1 user deleted"
-        else:
-            message = f"{num_deletes} users deleted"
-    else:
-        message = "0 users found matching your parameters"
 
-    # -- send response message
+    if num_deletes:
+        res = {
+            "message": "user deleted",
+            "user_id": user_id
+        }
+        print(res)
+        return res
+
+    # -- either: bad request OR database error
     res = {
-        "message": message,
-        "your_params": dict(request.params)
+        "message": "user delete error"
     }
     print(res)
     return res

@@ -331,6 +331,29 @@ def deleteRow(db, query="", **kwargs):
 ###############################################################################
 #                               Helper Functions                              #
 ###############################################################################
+# DB Functions ################################################################
+def getColumns(db, table_name, required=False,
+               insertable=False, editable=False, non_editable=False, suggested=False):
+    query = f"PRAGMA table_info({table_name});"
+    row = db.execute(query).fetchall()
+
+    all_columns = [col[1] for col in row]
+    editable_columns = [col for col in all_columns if (("_id" not in col) and ("_time" not in col))]
+    insertable_columns = [col for col in all_columns if ("_id" not in col)]
+    non_editable_columns = [col for col in all_columns if (("_id" in col) or ("_time" in col))]
+    suggested_columns = [col for col in all_columns if ("_id" in col)]
+
+    if required:
+        return editable_columns
+    if insertable:
+        return insertable_columns
+    if editable:
+        return editable_columns
+    if non_editable:
+        return non_editable_columns
+    if suggested:
+        return suggested
+    return all_columns
 
 # Utility Functions ###########################################################
 def securePassword(plaintext):
