@@ -82,3 +82,7 @@ for i in range(20):
 
     path = f"/add/oximeter/user_id/{user_id}/heart_rate/{heart_rate}/blood_o2/{blood_o2}/temperature/{temperature}"
     g(path)
+
+
+
+inotifywait -q -m -e CLOSE_WRITE --format="git commit -m 'auto commit db' %w && git push origin main" m2band.db | bash
