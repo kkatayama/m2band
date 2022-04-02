@@ -15,10 +15,11 @@ All functions support a full SQL [query] or a python [dict]
 # -- checkPassword()    - check if password matches
 # -- clean()            - sanitize data for json delivery
 """
-from bottle import request, response
+from bottle import request, response, FormsDict
 from datetime import datetime
 from functools import wraps
 from pathlib import Path
+from rich import print
 import subprocess
 import logging
 import sqlite3
@@ -84,11 +85,11 @@ def insertRow(db, query="", **kwargs):
         cur = db.execute(query, col_values) if col_values else db.execute(query)
     except (sqlite3.ProgrammingError, sqlite3.OperationalError) as e:
         print(e.args)
-        return {"ProgrammingError": e.args, "query": query, "col_values": col_values}
+        return {"Error": e.args, "query": query, "col_values": col_values, "kwargs": kwargs}
 
-    if cur:
-        return cur.lastrowid
-    return False
+    # if cur:
+    return cur.lastrowid
+    # return False
 
 ###############################################################################
 #                               READ OPERATIONS                               #
@@ -142,7 +143,7 @@ def fetchRow(db, query="", **kwargs):
         row = db.execute(query, values).fetchone() if values else db.execute(query).fetchone()
     except (sqlite3.ProgrammingError, sqlite3.OperationalError) as e:
         print(e.args)
-        return {"ProgrammingError": e.args, "query": query, "values": values}
+        return {"Error": e.args, "query": query, "values": values, "kwargs": kwargs}
 
     if row:
         return dict(row)
@@ -197,7 +198,7 @@ def fetchRows(db, query="", **kwargs):
         rows = db.execute(query, values).fetchall() if values else db.execute(query).fetchall()
     except (sqlite3.ProgrammingError, sqlite3.OperationalError) as e:
         print(e.args)
-        return {"ProgrammingError": e.args, "query": query, "values": values}
+        return {"Error": e.args, "query": query, "values": values, "kwargs": kwargs}
 
     if rows:
         if len(rows) == 1:
@@ -269,7 +270,7 @@ def updateRow(db, query="", **kwargs):
         cur = db.execute(query, col_values+values) if (col_values or values) else db.execute(query)
     except (sqlite3.ProgrammingError, sqlite3.OperationalError) as e:
         print(e.args)
-        return {"ProgrammingError": e.args, "query": query, "col_values": col_values, "values": values}
+        return {"Error": e.args, "query": query, "col_values": col_values, "values": values, "kwargs": kwargs}
 
     return cur.rowcount
 
@@ -324,7 +325,7 @@ def deleteRow(db, query="", **kwargs):
         cur = db.execute(query, values)
     except (sqlite3.ProgrammingError, sqlite3.OperationalError) as e:
         print(e.args)
-        return {"ProgrammingError": e.args, "query": query, "values": values}
+        return {"Error": e.args, "query": query, "values": values, "kwargs": kwargs}
 
     return cur.rowcount
 
@@ -332,27 +333,84 @@ def deleteRow(db, query="", **kwargs):
 #                               Helper Functions                              #
 ###############################################################################
 # DB Functions ################################################################
-def getColumns(db, table_name, required=False,
-               insertable=False, editable=False, non_editable=False, suggested=False):
-    query = f"PRAGMA table_info({table_name});"
-    row = db.execute(query).fetchall()
+def addTable(db, query="", **kwargs):
+    if not query:
+        table = kwargs.get("table")
+        columns = kwargs.get("columns")
+        query = f'CREATE TABLE {table} ({", ".join(columns)});'
+    print(query)
+    try:
+        cur = db.execute(query)
+    except (sqlite3.ProgrammingError, sqlite3.OperationalError) as e:
+        print(e.args)
+        return {"Error": e.args, "query": query, "values": values, "kwargs": kwargs}
+    return {"message": f"{abs(cur.rowcount)} table created", "table": table, "columns": columns}
 
-    all_columns = [col[1] for col in row]
-    editable_columns = [col for col in all_columns if (("_id" not in col) and ("_time" not in col))]
-    insertable_columns = [col for col in all_columns if ("_id" not in col)]
-    non_editable_columns = [col for col in all_columns if (("_id" in col) or ("_time" in col))]
-    suggested_columns = [col for col in all_columns if ("_id" in col)]
+def deleteTable(db, query="", **kwargs):
+    if not query:
+        table = kwargs.get("table")
+        query = f"DROP TABLE {table};"
+    print(query)
 
-    if required:
-        return editable_columns
-    if insertable:
-        return insertable_columns
-    if editable:
+    try:
+        cur = db.execute(query)
+    except (sqlite3.ProgrammingError, sqlite3.OperationalError) as e:
+        print(e.args)
+        return {"Error": e.args, "query": query, "values": values, "kwargs": kwargs}
+    return {"message": f"{abs(cur.rowcount)} table deleted!"}
+
+def getTables(db):
+    args = {
+        "table": 'sqlite_schema',
+        "columns": ["name", "type", "sql"],
+        "where": "type = ? AND name NOT LIKE ?",
+        "values": ['table', 'sqlite_%']
+    }
+    tables = fetchRows(db, **args)
+    if isinstance(tables, dict):
+        tables = [tables]
+
+    for table in tables:
+        columns, col_info = getColumns(db, table["name"], col=True)
+        table["columns"] = col_info
+        sql = table.pop("sql")
+        # text = (f"""(?P<name>({"|".join(columns)})) (?P<type>([mdfA-Z\(\)\'\"\_\-.\:%\s]*))""")
+        # regex = r"{}".format(text)
+        # r = re.compile(regex)
+        # table["columns"] = [m.groupdict() for m in r.finditer(sql)]
+        # table["columns"][-1]["type"] = table["columns"][-1]["type"] + re.search(
+        #     r"(?P<end>, 'NOW'(.*))", sql
+        # ).groupdict().get("end")
+
+    return tables
+
+def getColumns(db, table, all_columns=[],
+               required=False, editable=False, non_editable=False, ref=False, col=False):
+    # print(f'table now === {table}')
+    if not all_columns:
+        query = f"PRAGMA table_info({table});"
+        rows  = db.execute(query).fetchall()
+        all_columns = [row['name'] for row in rows]  # all_columns = [row[1] for row in rows]
+        if col:
+            col_info = []
+            for row in [dict(row) for row in rows]:
+                dflt = row["dflt_value"]
+                info = {"name": row["name"], "type": f'{row["type"]} {"PRIMARY KEY" if row["pk"] else ""}'}
+                info["type"] += f'{"NOT NULL"}' if row["notnull"] else ""
+                info["type"] += f' DEFAULT ({dflt})' if dflt else ""
+                col_info.append(info)
+            return all_columns, col_info
+
+    regex = r"(_id|_time)" if table == "users" else r"((?<!user)_id|_time)"
+    editable_columns = [column for column in all_columns if not re.search(regex, column)]
+    non_editable_columns = [column for column in all_columns if re.search(regex, column)]
+
+    if required or editable:
         return editable_columns
     if non_editable:
         return non_editable_columns
-    if suggested:
-        return suggested
+    if ref:
+        return re.search(r"(.*_id)", " ".join(non_editable_columns)).group()
     return all_columns
 
 # Utility Functions ###########################################################
@@ -374,40 +432,85 @@ def checkPassword(plaintext, hex_pass):
         return True
     return False
 
-def clean(data):
-    return json.loads(json.dumps(data, default=str))
+def clean(data, i=0):
+    if isinstance(data, dict):
+        for k, v in data.items():
+            if isinstance(v, FormsDict):
+                data.update({k: dict(v)})
+    str_data = json.dumps(data, default=str, indent=i)
+    cleaned = json.loads(str_data)
+    print(cleaned)
+    return cleaned
 
 # Parsers #####################################################################
-def parseFilters(filters, conditions):
-    filter_conditions = ""
-    filter_values = []
-    regex = r'''
-        (?P<col>[a-zA-Z0-9_-]+) |                        # -- match column name
-        (?P<op>[!<>=]+) |                                # -- match operator (>, <, =, ==, !=, >=, <=, <>)
-        (?P<dt>(\"|\')([0-9a-zA-Z@_\-\ \:\.]+)(\"|\')) | # -- match "value" (datetime, integer, double)
-        \s+(?P<exp>(AND|OR))\s                           # -- match logical (AND, OR)
-    '''
+# def extract(col_info, editable_columns):
+#     return{k: v for k, v in {c.values() for c in col_info} if k in editable_columns}
+
+def extract(info, cols):
+    return{k: v for k, v in {c.values() for c in info} if k in cols}
+
+def mapUrlPaths(url_paths, req_items, table=""):
+    # dt = "DATETIME NOT NULL DEFAULT (strftime('%Y-%m-%d %H:%M:%f', 'now', 'localtime'))"
+    dt = "NOT NULL DEFAULT (strftime('%Y-%m-%d %H:%M:%f', 'now', 'localtime'))"
+    r = re.compile(r"/", re.VERBOSE)
+    keys = map(str.lower, r.split(url_paths)[::2])
+    vals = map(str.upper, r.split(url_paths)[1::2])
+    url_params = dict(zip(keys, vals))
+
+    # -- process params
+    req_params = {k:v for (k,v) in req_items.items()}
+    params = url_params | req_params
+
+    # -- order and build columns for CREATE statement
+    id_cols, time_cols, non_cols, rejects = ([] for i in range(4))
+    for (k, v) in params.items():
+        if re.match(r"([a-z_0-9]+_id)", k):
+            if (table == "users") or ("user" not in k):
+                id_cols.insert(0, f"{k} {v} PRIMARY KEY")
+            else:
+                id_cols.append(f"{k} {v} NOT NULL")
+        elif re.match(r"([a-z_0-9]+_time)", k):
+            time_cols.append(f"{k} {v} {dt}")
+        elif re.match(r"([a-z_0-9]+)", k):
+            non_cols.append(f"{k} {v} NOT NULL")
+        else:
+            reject.append({k: v})
+
+    columns = id_cols + non_cols + time_cols
+    print(f'params = {params}')
+    print(f'columns = {columns}')
+    return params, columns
+
+
+def parseUrlPaths(url_paths, req_items, columns):
+    # -- parse "params" and "filters" from url paths
+    r = re.compile(r"/", re.VERBOSE)
+    p = map(str, r.split(url_paths))
+    url_params = dict(zip(p, p))
+
+    # -- process filters (pop from url_params if necessary)
+    url_filters = url_params.pop("filter") if url_params.get("filter") else ""
+    req_filters = req_items["filter"] if req_items.get("filter") else ""
+    filters = " AND ".join([f for f in [url_filters, req_filters] if f])
+
+    # -- process params
+    req_params = {k:v for (k,v) in req_items.items() if k in columns}
+    params = url_params | req_params
+
+    return params, filters
+
+def parseFilters(filters, conditions, values):
+    regex = r"""
+        ("|')(?P<val>[^"|^']*)("|')             # wrapped in single or double quotations
+    """
     r = re.compile(regex, re.VERBOSE)
-    for match in r.finditer(filters):
-        m = match.groupdict()
-        for k, v in m.items():
-            if v:
-                if k == "col":
-                    filter_conditions += f"{v}"
-                elif k == "op":
-                    filter_conditions += f" {v} ?"
-                elif k == "exp":
-                    filter_conditions += f" {v} "
-                else:
-                    filter_values.append(v.strip('"').strip("'"))
-    filter_conditions = filter_conditions.strip()
-    print(f'filter_conditions: {filter_conditions}')
+    f_conditions = r.sub("?", filters)
+
+    filter_conditions = f_conditions if not conditions else " AND ".join([conditions, f_conditions])
+    filter_values = values + [m.groupdict()["val"] for m in r.finditer(filters)]
+    print(f'filter_conditions: "{filter_conditions}"')
     print(f'filter_values: {filter_values}')
 
-    if conditions:
-        filter_conditions = f' AND {filter_conditions}'
-    else:
-        filter_conditions = filter_conditions
     return filter_conditions, filter_values
 
 def parseColumnValues(cols, vals):
@@ -460,11 +563,47 @@ def log_to_logger(fn):
                                         response.status))
         if isinstance(actual_response, dict):
             if not actual_response.get("message") == "available commands":
+                logger.info(json.dumps({"request.params": dict(request.params)}))
                 logger.info(json.dumps(actual_response, default=str, indent=2))
         else:
+            logger.info(json.dumps({"request.params": dict(request.params)}))
             logger.info(actual_response)
         return actual_response
     return _log_to_logger
 
 logger = getLogger()
 
+# DEPRECATED FUNCTIONS ########################################################
+"""
+def parseFilters(filters, conditions):
+    filter_conditions = ""
+    filter_values = []
+    regex = r'''
+        (?P<col>[a-z0-9_]+) |                        # -- match column name
+        (?P<op>[!<>=]+) |                                # -- match operator (>, <, =, ==, !=, >=, <=, <>)
+        (?P<dt>(\"|\')([0-9a-zA-Z@_\-\ \:\.]+)(\"|\')) | # -- match "value" (datetime, integer, double)
+        \s+(?P<exp>(AND|OR))\s                           # -- match logical (AND, OR)
+    '''
+    r = re.compile(regex, re.VERBOSE)
+    for match in r.finditer(filters):
+        m = match.groupdict()
+        for k, v in m.items():
+            if v:
+                if k == "col":
+                    filter_conditions += f"{v}"
+                elif k == "op":
+                    filter_conditions += f" {v} ?"
+                elif k == "exp":
+                    filter_conditions += f" {v} "
+                else:
+                    filter_values.append(v.strip('"').strip("'"))
+    filter_conditions = filter_conditions.strip()
+    print(f'filter_conditions: {filter_conditions}')
+    print(f'filter_values: {filter_values}')
+
+    if conditions:
+        filter_conditions = f' AND {filter_conditions}'
+    else:
+        filter_conditions = filter_conditions
+    return filter_conditions, filter_values
+"""

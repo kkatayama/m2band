@@ -1,90 +1,44 @@
-from bottle import hook, install, route, run, request, response, redirect, static_file, urlencode
+from bottle import Bottle, run, request, response, redirect, static_file
 from bottle_sqlite import SQLitePlugin, sqlite3
 from datetime import datetime
 from db_functions import *
-from rich import print, inspect
-from docs.usage import *
-import bottle
+# from rich.traceback import install
+# from rich import print, inspect, print_json, pretty
 import json
 import os
 
+# pretty.install()
 
-# app = Bottle()
-app = bottle.app()
+app = Bottle()
 plugin = SQLitePlugin(dbfile="m2band.db", detect_types=sqlite3.PARSE_DECLTYPES|sqlite3.PARSE_COLNAMES)
 app.install(plugin)
 app.install(log_to_logger)
 
-# -- hook to strip trailing slash
-@hook('before_request')
-def strip_path():
-    request.environ['PATH_INFO'] = request.environ['PATH_INFO'].rstrip('/')
-
-# -- index - response: available commands
-@route("/", method=["GET", "POST", "PUT", "DELETE"])
+@app.route("/", method=["GET", "POST", "PUT", "DELETE"])
 def index():
-    # print(inspect(app, all=True))
-    with open('docs/all_commands.json') as f:
+    with open('all_commands.js') as f:
         res = json.load(f)
     return clean(res)
 
-###############################################################################
-#                   Core Function /add - Add Data to a Table                  #
-###############################################################################
-@route("/add", method=["GET", "POST", "PUT", "DELETE"])
-@route("/add/<table>", method=["GET", "POST", "PUT", "DELETE"])
-@route("/add/<table>/<url_paths:path>", method=["GET", "POST", "PUT", "DELETE"])
-def add(db, table="", url_paths=""):
-    if table == 'usage':
-        return usage_add
-    if ((not table) or (table not in [t["name"] for t in getTables(db)])):
-        return clean({"message": "active tables in the database", "tables": getTables(db)})
-
-    # -- parse "params" and "filters" from HTTP request
-    required_columns = getColumns(db, table, required=True)
-    params, filters  = parseUrlPaths(url_paths, request.params, required_columns)
-
-    # -- check for required parameters
-    if any(k not in params.keys() for k in required_columns):
-        res = {"message": "missing paramaters", "required": required_columns, "supplied": request.params}
-        return clean(res)
-
-    # -- the users table requires additional formatting and checking
-    if table == "users":
-        params.update({"password": securePassword(params["password"])})
-        if fetchRow(db, table=table, where="username=?", values=params["username"]):
-            res = {"message": "user exists", "username": params["username"]}
-            return clean(res)
-
-    # -- define "columns" to edit and "values" to insert
-    columns    = [column for column in required_columns if params.get(column)]
-    col_values = [params[column] for column in columns]
-
-    # -- query database -- INSERT INTO oximeter (user_id,heart_rate,...) VALUES (?, ?, ...);
-    col_id = insertRow(db, table=table, columns=columns, col_values=col_values)
-    if isinstance(col_id, dict):
-        if col_id.get('Error'):
-            return clean(col_id)
-
-    # -- send response message
-    col_ref = getColumns(db, table, ref=True)  # -- get (.*_id) name for table
-    res = {"message": f"data added to <{table}>", col_ref: col_id}
-    for r in re.findall(r"(.*_id)", " ".join(required_columns)):
-        res[r] = params.get(r)
-    return clean(res)
-
-###############################################################################
-#                 Core Function /get - Fetch Data From a Table                #
-###############################################################################
-@route("/get", method=["GET", "POST", "PUT", "DELETE"])
-@route("/get/<table>", method=["GET", "POST", "PUT", "DELETE"])
-@route("/get/<table>/<url_paths:path>", method=["GET", "POST", "PUT", "DELETE"])
+@app.route("/get", method=["GET", "POST", "PUT", "DELETE"])
+@app.route("/get/", method=["GET", "POST", "PUT", "DELETE"])
+@app.route("/get/<table>", method=["GET", "POST", "PUT", "DELETE"])
+@app.route("/get/<table>/", method=["GET", "POST", "PUT", "DELETE"])
+@app.route("/get/<table>/<url_paths:path>", method=["GET", "POST", "PUT", "DELETE"])
+@app.route("/get/<table>/<url_paths:path>/", method=["GET", "POST", "PUT", "DELETE"])
 def get(db, table="", url_paths=""):
-    print(f"request.params = {dict(request.params)}")
+    print(request.url_args)
+    if not table:
+        return clean({"message": "available tables in the database", "tables": getTables(db)})
     if table == 'usage':
-        return usage_get
-    if ((not table) or (table not in [t["name"] for t in getTables(db)])):
-        return clean({"message": "active tables in the database", "tables": getTables(db)})
+        res = {
+            "message": "usage options",
+            "/get/<table_name>": "returns all rows in a table",
+            "/get/<table_name>/<column_name>/<column_value>/../..": "query rows matching [name='value', ...]",
+            "/get/<table_name>/filter/<filter_string>": "query rows with filter (create_time > '2022-03-30')",
+            "/get/<table_name>/<column_name>/<column_value>/../filter/<filter_string>": "use query and filter"
+        }
+        return clean(res)
 
     # -- parse "params" and "filters" from HTTP request
     all_columns = getColumns(db, table)
@@ -105,148 +59,31 @@ def get(db, table="", url_paths=""):
     elif isinstance(rows, list):
         message = f"found {len(rows)} {table.rstrip('s')} entries"
     else:
-        message = f"0 {table.rstrip('s')} entries found using supplied parameters"
-        rows = {"supplied": request.params}
+        message = f"no {table.rstrip('s')} data found"
+        rows = {"your_params": request.params}
 
     # -- send response message
     res = {"message": message, "data": clean(rows)}
     return clean(res)
 
 ###############################################################################
-#                  Core Function /edit - Edit Data in a Table                 #
-###############################################################################
-@route("/edit", method=["GET", "POST", "PUT", "DELETE"])
-@route("/edit/<table>", method=["GET", "POST", "PUT", "DELETE"])
-@route("/edit/<table>/<url_paths:path>", method=["GET", "POST", "PUT", "DELETE"])
-def edit(db, table="", url_paths=""):
-    print(f"request.params = {dict(request.params)}")
-    if table == 'usage':
-        return usage_edit
-    if ((not table) or (table not in [t["name"] for t in getTables(db)])):
-        return clean({"message": "active tables in the database", "tables": getTables(db)})
-
-    # -- parse "params" and "filters" from HTTP request
-    all_columns, col_info = getColumns(db, table, col=True)
-    editable_columns = getColumns(db, table, all_columns, required=True)
-    non_edit_columns = getColumns(db, table, all_columns, non_editable=True)
-    params, filters  = parseUrlPaths(url_paths, request.params, all_columns)
-    print(f"params = {params}\nfilters = '{filters}'")
-
-    # -- the users table requires additional formatting and checking
-    if (table == "users") and params.get("password"):
-        params.update({"password": securePassword(params["password"])})
-
-    # -- at least 1 edit parameter required
-    if not any(k in params.keys() for k in editable_columns):
-        res = {"message": "missing a parameter to edit",
-               "editable": extract(col_info, editable_columns), "supplied": request.params}
-        return clean(res)
-
-    # -- at least 1 query parameter required
-    supplied = {'filter': filters} | params if filters else params
-    query_params = non_edit_columns + ["filter"]
-    if not any(k in supplied.keys() for k in query_params):
-        res = {"message": "missing a query parameter",
-               "query_params": extract(col_info, query_params), "supplied": supplied}
-        return clean(res)
-
-    # -- define "columns" to edit and "values" to insert (parsed from params in HTTP request)
-    columns    = [column for column in editable_columns if params.get(column)]
-    col_values = [params[column] for column in columns]
-
-    # -- build "conditions" string and "values" string/array for "updateRow()"
-    conditions = " AND ".join([f"{param}=?" for param in non_edit_columns if params.get(param)])
-    values     = [params[param] for param in non_edit_columns if params.get(param)]
-    if filters:
-        conditions, values = parseFilters(filters, conditions, values)
-
-    # -- query database -- UPDATE users SET username=? WHERE (user_id=?);
-    args = {
-        "table": table, "columns": columns, "col_values": col_values,
-        "where": conditions, "values": values
-    }
-    num_edits = updateRow(db, **args)
-    if isinstance(num_edits, dict):
-        if num_edits.get('Error'):
-            return clean(num_edits)
-    elif num_edits:
-        if num_edits == 1:
-            message = f"edited 1 {table.rstrip('s')} entry"
-        else:
-            message = f"edited {num_edits} {table.rstrip('s')} entries"
-    else:
-        message = f"0 {table.rstrip('s')} entries found matching your parameters"
-
-    # -- send response message
-    res = {"message": message, "supplied": supplied}
-    return clean(res)
-
-###############################################################################
-#             Core Function /delete - Delete Data from a Table                #
-###############################################################################
-@route("/delete", method=["GET", "POST", "PUT", "DELETE"])
-@route("/delete/<table>", method=["GET", "POST", "PUT", "DELETE"])
-@route("/delete/<table>/<url_paths:path>", method=["GET", "POST", "PUT", "DELETE"])
-def edit(db, table="", url_paths=""):
-    print(f"request.params = {dict(request.params)}")
-    if table == 'usage':
-        return usage_delete
-    if ((not table) or (table not in [t["name"] for t in getTables(db)])):
-        return clean({"message": "active tables in the database", "tables": getTables(db)})
-
-    # -- parse "params" and "filters" from HTTP request
-    all_columns = getColumns(db, table)
-    params, filters  = parseUrlPaths(url_paths, request.params, all_columns)
-    print(f"params = {params}\nfilters = '{filters}'")
-
-    # -- to prevent accidental deletion of everything, at least 1 parameter is required
-    supplied = {'filter': filters} | params if filters else params
-    query_params = all_columns + ["filter"]
-    if not any(k in supplied.keys() for k in query_params):
-        res = {"message": "missing a query param(s)", "query_params": query_params, "supplied": supplied}
-        return clean(res)
-
-    # -- build "conditions" string and "values" string/array for "updateRow()"
-    conditions = " AND ".join([f"{param}=?" for param in all_columns if params.get(param)])
-    values     = [params[param] for param in all_columns if params.get(param)]
-    if filters:
-        conditions, values = parseFilters(filters, conditions, values)
-
-    # -- query database -- DELETE FROM users WHERE (user_id=?);
-    num_deletes = deleteRow(db, table=table, where=conditions, values=values)
-    if isinstance(num_deletes, dict):
-        if num_deletes.get('Error'):
-            return clean(num_deletes)
-    elif num_deletes:
-        if num_deletes == 1:
-            message = f"1 {table.rstrip('s')} entry deleted"
-        else:
-            message = f"{num_deletes} {table.rstrip('s')} entries deleted"
-    else:
-        message = f"0 {table.rstrip('s')} entries found matching your parameters"
-
-    # -- send response message
-    res = {"message": message, "supplied": request.params}
-    return clean(res)
-
-###############################################################################
 #                      User's Table: Additional Functions                     #
 ###############################################################################
-@route("/login", method=["GET", "POST", "PUT", "DELETE"])
-@route("/login/<url_paths:path>", method=["GET", "POST", "PUT", "DELETE"])
-def login(db, url_paths=""):
-    # -- parse "params" and "filters" from HTTP request
-    required_columns = getColumns(db, table="users", required=True)
-    params, filters  = parseUrlPaths(url_paths, request.params, required_columns)
-    print(f"params = {params}\nfilters = '{filters}'")
+@app.route("/login", method=["GET", "POST", "PUT", "DELETE"])
+def login(db):
+    table = "users"
+
+    # -- parse "params" from HTTP request
+    required_columns = getColumns(db, table, required=True)
+    params = {k:v for (k,v) in request.params.items() if k in required_columns}
 
     # -- check for required parameters
     if any(k not in params.keys() for k in required_columns):
-        res = {"message": "missing parameters", "required": required_columns, "supplied": params}
+        res = {"message": "missing parameters", "required": required_columns, "supplied": request.params}
         return clean(res)
 
     # -- check if user exists
-    row = fetchRow(db, table="users", where="username=?", values=params["username"])
+    row = fetchRow(db, table=table, where="username=?", values=params["username"])
     if not row:
         res = {"message": "user does not exist", "username": params["username"]}
         return clean(res)
@@ -260,7 +97,7 @@ def login(db, url_paths=""):
     res = {"message": "user login success", "user_id": row["user_id"], "username": row["username"]}
     return clean(res)
 
-@route("/logout", method=["GET", "POST", "PUT", "DELETE"])
+@app.route("/logout", method=["GET", "POST", "PUT", "DELETE"])
 def logout(db):
     # response.delete_cookie("user_id")
 
@@ -269,123 +106,10 @@ def logout(db):
     return clean(res)
 
 ###############################################################################
-#                          Database Admin Functions                           #
-###############################################################################
-@route("/dropTable")
-@route("/dropTable/<table>")
-def dropTable(db, table=""):
-    if table == 'usage':
-        return usage_delete_table
-    if ((not table) or (table not in [t["name"] for t in getTables(db)])):
-        return clean({"message": "active tables in the database", "tables": getTables(db)})
-
-    # -- DROP TABLE <table>
-    res = deleteTable(db, table=table)
-    res.update({"table": table})
-    return clean(res)
-
-@route("/createTable")
-@route("/createTable/<table>")
-@route("/createTable/<table>/<url_paths:path>", method=["GET", "POST", "PUT", "DELETE"])
-def createTable(db, table="", url_paths=""):
-    if table == 'usage':
-        return usage_create_table
-    if ((not table) or (not url_paths)):
-        return clean({"message": "active tables in the database", "tables": getTables(db)})
-
-    # -- parse "params" and "url_paths" from HTTP request
-    params, columns = mapUrlPaths(url_paths, request.params, table)
-
-    # -- CREATE TABLE <table>
-    res = addTable(db, table=table, columns=columns)
-    res.update({"table": table})
-    return clean(res)
-
-
-
-###############################################################################
-#                    Old Routes For Backwards Compatability                   #
-###############################################################################
-"""
-These routes are here to keep existing apps working.
-Eventually, they should be deleted.
-Apps should migrate to the new Framework Format as these routes are currently using.
-"""
-# users table #################################################################
-@route("/addUser", method=["GET", "POST", "PUT", "DELETE"])
-@route("/createUser", method=["GET", "POST", "PUT", "DELETE"])
-def addUser(db):
-    print(f"request.url = {request.url}")
-    return redirect(f'/add/users?{urlencode(request.params)}')
-
-@route("/getUser", method=["GET", "POST", "PUT", "DELETE"])
-@route("/getUsers", method=["GET", "POST", "PUT", "DELETE"])
-def getUserOld(db):
-    print(f"request.url = {request.url}")
-    return redirect(f'/get/users?{urlencode(request.params)}')
-
-@route("/editUser", method=["GET", "POST", "PUT", "DELETE"])
-def editUser(db):
-    print(f"request.url = {request.url}")
-    return redirect(f'/edit/users?{urlencode(request.params)}')
-
-@route('/deleteUser', method=["GET", "POST", "PUT", "DELETE"])
-def deleteUser(db):
-    print(f"request.url = {request.url}")
-    return redirect(f'/delete/users?{urlencode(request.params)}')
-
-# oximeter table ##############################################################
-@route("/addSensorData", method=["GET", "POST", "PUT", "DELETE"])
-def addSensorData(db):
-    print(f"request.url = {request.url}")
-    return redirect(f'/add/oximeter?{urlencode(request.params)}')
-
-@route("/getSensorData", method=["GET", "POST", "PUT", "DELETE"])
-@route("/getAllSensorData", method=["GET", "POST", "PUT", "DELETE"])
-def getSensorOld(db):
-    print(f"request.url = {request.url}")
-    return redirect(f'/get/oximeter?{urlencode(request.params)}')
-
-@route("/editSensorData", method=["GET", "POST", "PUT", "DELETE"])
-def editSensorData(db):
-    print(f"request.url = {request.url}")
-    return redirect(f'/edit/oximeter?{urlencode(request.params)}')
-
-@route("/deleteSensorData", method=["GET", "POST", "PUT", "DELETE"])
-def deleteSensorData(db):
-    print(f"request.url = {request.url}")
-    return redirect(f'/delete/oximeter?{urlencode(request.params)}')
-
-
-###############################################################################
-#                                TESTING / DEBUG                              #
-###############################################################################
-@route("/test", method=["GET", "POST", "PUT", "DELETE"])
-def test(db):
-    print(f"request.url = {request.url}")
-    print(f"request.urlparts.query = {request.urlparts.query}")
-    print(f"request.query_string = {request.query_string}")
-    print(f"request.params = {dict(request.params)}")
-    return redirect(f'/get/users?{urlencode(request.params)}')
-
-
-# -- Run Web Server
-port = int(os.environ.get("PORT", 8080))
-# run(host="0.0.0.0", port=port, reloader=True)
-run(app, host="0.0.0.0", port=port, reloader=True)
-
-
-
-
-###############################################################################
-#                             DEPRECATED FUNCTIONS                            #
-###############################################################################
-"""
-###############################################################################
 #                         User's Table: Core Functions                        #
 ###############################################################################
-@route("/addUser", method=["GET", "POST", "PUT", "DELETE"])
-@route("/createUser", method=["GET", "POST", "PUT", "DELETE"])
+@app.route("/addUser", method=["GET", "POST", "PUT", "DELETE"])
+@app.route("/createUser", method=["GET", "POST", "PUT", "DELETE"])
 def addUser(db):
     table = "users"
 
@@ -421,8 +145,8 @@ def addUser(db):
     res = {"message": "user created", "user_id": user_id, "username": params["username"]}
     return clean(res)
 
-@route("/getUser", method=["GET", "POST", "PUT", "DELETE"])
-@route("/getUsers", method=["GET", "POST", "PUT", "DELETE"])
+@app.route("/getUser", method=["GET", "POST", "PUT", "DELETE"])
+@app.route("/getUsers", method=["GET", "POST", "PUT", "DELETE"])
 def getUser(db):
     table = "users"
 
@@ -454,7 +178,7 @@ def getUser(db):
     return clean(res)
 
 
-@route("/editUser", method=["GET", "POST", "PUT", "DELETE"])
+@app.route("/editUser", method=["GET", "POST", "PUT", "DELETE"])
 def editUser(db):
     table = "users"
 
@@ -514,7 +238,7 @@ def editUser(db):
     res = {"message": message, "supplied": request.params}
     return clean(res)
 
-@route('/deleteUser', method=["GET", "POST", "PUT", "DELETE"])
+@app.route('/deleteUser', method=["GET", "POST", "PUT", "DELETE"])
 def deleteUser(db):
     table = "users"
 
@@ -555,7 +279,7 @@ def deleteUser(db):
 ###############################################################################
 #                        Oximeter Table: Core Functions                       #
 ###############################################################################
-@route("/addSensorData", method=["GET", "POST", "PUT", "DELETE"])
+@app.route("/addSensorData", method=["GET", "POST", "PUT", "DELETE"])
 def addSensorData(db):
     table = "oximeter"
 
@@ -583,8 +307,8 @@ def addSensorData(db):
     res = {"message": f"data added to <{table}>", "user_id": user_id, col_ref: col_id}
     return clean(res)
 
-@route("/getSensorData", method=["GET", "POST", "PUT", "DELETE"])
-@route("/getAllSensorData", method=["GET", "POST", "PUT", "DELETE"])
+@app.route("/getSensorData", method=["GET", "POST", "PUT", "DELETE"])
+@app.route("/getAllSensorData", method=["GET", "POST", "PUT", "DELETE"])
 def getSensorData(db):
     table = "oximeter"
 
@@ -615,7 +339,7 @@ def getSensorData(db):
     res = {"message": message, "data": rows}
     return clean(res)
 
-@route("/editSensorData", method=["GET", "POST", "PUT", "DELETE"])
+@app.route("/editSensorData", method=["GET", "POST", "PUT", "DELETE"])
 def editSensorData(db):
     table = "oximeter"
 
@@ -672,7 +396,7 @@ def editSensorData(db):
     res = {"message": message, "supplied": request.params}
     return clean(res)
 
-@route("/deleteSensorData", method=["GET", "POST", "PUT", "DELETE"])
+@app.route("/deleteSensorData", method=["GET", "POST", "PUT", "DELETE"])
 def deleteSensorData(db):
     table = "oximeter"
 
@@ -709,4 +433,8 @@ def deleteSensorData(db):
     # -- send response message
     res = {"message": message, "supplied": request.params}
     return clean(res)
-"""
+
+
+# -- Run Web Server
+port = int(os.environ.get("PORT", 8080))
+run(app, host="0.0.0.0", port=port, reloader=True)
