@@ -459,7 +459,8 @@ def mapUrlPaths(url_paths, req_items, table=""):
 
     # -- process params
     req_params = {k:v for (k,v) in req_items.items()}
-    params = url_params | req_params
+    # params = url_params | req_params
+    params = {**url_params, **req_params}
 
     # -- order and build columns for CREATE statement
     id_cols, time_cols, non_cols, rejects = ([] for i in range(4))
@@ -495,7 +496,7 @@ def parseUrlPaths(url_paths, req_items, columns):
 
     # -- process params
     req_params = {k:v for (k,v) in req_items.items() if k in columns}
-    params = url_params | req_params
+    params = {**url_params, **req_params}
 
     return params, filters
 

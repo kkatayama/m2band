@@ -143,7 +143,8 @@ def edit(db, table="", url_paths=""):
         return clean(res)
 
     # -- at least 1 query parameter required
-    supplied = {'filter': filters} | params if filters else params
+    # supplied = {'filter': filters} | params if filters else params
+    supplied = {**{'filter': filters}, **params}
     query_params = non_edit_columns + ["filter"]
     if not any(k in supplied.keys() for k in query_params):
         res = {"message": "missing a query parameter",
@@ -200,7 +201,8 @@ def edit(db, table="", url_paths=""):
     print(f"params = {params}\nfilters = '{filters}'")
 
     # -- to prevent accidental deletion of everything, at least 1 parameter is required
-    supplied = {'filter': filters} | params if filters else params
+    # supplied = {'filter': filters} | params if filters else params
+    supplied = {{'filter': filters}, params} if filters else params
     query_params = all_columns + ["filter"]
     if not any(k in supplied.keys() for k in query_params):
         res = {"message": "missing a query param(s)", "query_params": query_params, "supplied": supplied}
