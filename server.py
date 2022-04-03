@@ -318,45 +318,45 @@ Apps should migrate to the new Framework Format as these routes are currently us
 @route("/createUser", method=["GET", "POST", "PUT", "DELETE"])
 def addUser(db):
     print(f"request.url = {request.url}")
-    return redirect(f'/add/users?{urlencode(request.params)}')
+    return redirect(f'https://m2band.hopto.org/add/users?{urlencode(request.params)}')
 
 @route("/getUser", method=["GET", "POST", "PUT", "DELETE"])
 @route("/getUsers", method=["GET", "POST", "PUT", "DELETE"])
 def getUserOld(db):
     print(f"request.url = {request.url}")
-    return redirect(f'/get/users?{urlencode(request.params)}')
+    return redirect(f'https://m2band.hopto.org/get/users?{urlencode(request.params)}')
 
 @route("/editUser", method=["GET", "POST", "PUT", "DELETE"])
 def editUser(db):
     print(f"request.url = {request.url}")
-    return redirect(f'/edit/users?{urlencode(request.params)}')
+    return redirect(f'https://m2band.hopto.org/edit/users?{urlencode(request.params)}')
 
 @route('/deleteUser', method=["GET", "POST", "PUT", "DELETE"])
 def deleteUser(db):
     print(f"request.url = {request.url}")
-    return redirect(f'/delete/users?{urlencode(request.params)}')
+    return redirect(f'https://m2band.hopto.org/delete/users?{urlencode(request.params)}')
 
 # oximeter table ##############################################################
 @route("/addSensorData", method=["GET", "POST", "PUT", "DELETE"])
 def addSensorData(db):
     print(f"request.url = {request.url}")
-    return redirect(f'/add/oximeter?{urlencode(request.params)}')
+    return redirect(f'https://m2band.hopto.org/add/oximeter?{urlencode(request.params)}')
 
 @route("/getSensorData", method=["GET", "POST", "PUT", "DELETE"])
 @route("/getAllSensorData", method=["GET", "POST", "PUT", "DELETE"])
 def getSensorOld(db):
     print(f"request.url = {request.url}")
-    return redirect(f'/get/oximeter?{urlencode(request.params)}')
+    return redirect(f'https://m2band.hopto.org/get/oximeter?{urlencode(request.params)}')
 
 @route("/editSensorData", method=["GET", "POST", "PUT", "DELETE"])
 def editSensorData(db):
     print(f"request.url = {request.url}")
-    return redirect(f'/edit/oximeter?{urlencode(request.params)}')
+    return redirect(f'https://m2band.hopto.org/edit/oximeter?{urlencode(request.params)}')
 
 @route("/deleteSensorData", method=["GET", "POST", "PUT", "DELETE"])
 def deleteSensorData(db):
     print(f"request.url = {request.url}")
-    return redirect(f'/delete/oximeter?{urlencode(request.params)}')
+    return redirect(f'https://m2band.hopto.org/delete/oximeter?{urlencode(request.params)}')
 
 
 ###############################################################################
