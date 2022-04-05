@@ -32,33 +32,43 @@ def index():
 #                   Core Function /add - Add Data to a Table                  #
 ###############################################################################
 @route("/add", method=["GET", "POST", "PUT", "DELETE"])
-@route("/add/<table>", method=["GET", "POST", "PUT", "DELETE"])
-@route("/add/<table>/<url_paths:path>", method=["GET", "POST", "PUT", "DELETE"])
-def add(db, table="", url_paths=""):
-    if table == 'usage':
+@route("/add/<table_name>", method=["GET", "POST", "PUT", "DELETE"])
+@route("/add/<table_name>/<url_paths:path>", method=["GET", "POST", "PUT", "DELETE"])
+def add(db, table_name="", url_paths=""):
+    if table_name == 'usage':
         return usage_add
-    if ((not table) or (table not in [t["name"] for t in getTables(db)])):
-        return clean({"message": "active tables in the database", "tables": getTables(db)})
+
+    tables = getTables(db)
+    table = getTable(db, tables, table_name)
+    if not table:
+        return clean({"message": "active tables in the database", "tables": tables})
 
     # -- parse "params" and "filters" from HTTP request
     required_columns = getColumns(db, table, required=True)
     params, filters  = parseUrlPaths(url_paths, request.params, required_columns)
 
     # -- check for required parameters
-    if any(k not in params.keys() for k in required_columns):
-        res = {"message": "missing paramaters", "required": required_columns, "supplied": [params]}
+    missing_keys = (params.keys() ^ required_columns.keys())
+    missing_params = {k:table["columns"][k] for k in required_columns if k in missing_keys}
+    if missing_params:
+        res = {"message": "missing paramaters", "required": [required_columns],
+               "missing": [missing_params], "submitted": [params]}
+    # if any(k not in params.keys() for k in required_columns):
+    #     res = {"message": "missing paramaters", "required": required_columns, "submitted": [params]}
         return clean(res)
 
     # -- the users table requires additional formatting and checking
-    if table == "users":
+    if table_name == "users":
         params.update({"password": securePassword(params["password"])})
         if fetchRow(db, table=table, where="username=?", values=params["username"]):
             res = {"message": "user exists", "username": params["username"]}
             return clean(res)
 
     # -- define "columns" to edit and "values" to insert
-    columns    = [column for column in required_columns if params.get(column)]
-    col_values = [params[column] for column in columns]
+    edit_items = {k: params[k] for k in required_columns if params.get(k)}
+    columns, col_values = list(edit_items.keys()), list(edit_items.values())
+    # columns    = [column for column in required_columns if params.get(column)]
+    # col_values = [params[column] for column in columns]
 
     # -- query database -- INSERT INTO oximeter (user_id,heart_rate,...) VALUES (?, ?, ...);
     col_id = insertRow(db, table=table, columns=columns, col_values=col_values)
@@ -68,7 +78,7 @@ def add(db, table="", url_paths=""):
 
     # -- send response message
     col_ref = getColumns(db, table, ref=True)  # -- get (.*_id) name for table
-    res = {"message": f"data added to <{table}>", col_ref: col_id}
+    res = {"message": f"data added to <{table_name}>", col_ref: col_id}
     for r in re.findall(r"(.*_id)", " ".join(required_columns)):
         res[r] = params.get(r)
     return clean(res)
@@ -77,18 +87,20 @@ def add(db, table="", url_paths=""):
 #                 Core Function /get - Fetch Data From a Table                #
 ###############################################################################
 @route("/get", method=["GET", "POST", "PUT", "DELETE"])
-@route("/get/<table>", method=["GET", "POST", "PUT", "DELETE"])
-@route("/get/<table>/<url_paths:path>", method=["GET", "POST", "PUT", "DELETE"])
-def get(db, table="", url_paths=""):
+@route("/get/<table_name>", method=["GET", "POST", "PUT", "DELETE"])
+@route("/get/<table_name>/<url_paths:path>", method=["GET", "POST", "PUT", "DELETE"])
+def get(db, table_name="", url_paths=""):
     print(f"request.params = {dict(request.params)}")
-    if table == 'usage':
+    if table_name == 'usage':
         return usage_get
-    if ((not table) or (table not in [t["name"] for t in getTables(db)])):
-        return clean({"message": "active tables in the database", "tables": getTables(db)})
+
+    tables = getTables(db)
+    table = getTable(db, tables, table_name)
+    if not table:
+        return clean({"message": "active tables in the database", "tables": tables})
 
     # -- parse "params" and "filters" from HTTP request
-    all_columns = getColumns(db, table)
-    params, filters = parseUrlPaths(url_paths, request.params, all_columns)
+    params, filters = parseUrlPaths(url_paths, request.params, table["columns"])
 
     # -- build "conditions" string and "values" array for "fetchRows()"
     conditions = " AND ".join([f"{param}=?" for param in params.keys()])
@@ -101,12 +113,12 @@ def get(db, table="", url_paths=""):
     if isinstance(rows, dict):
         if rows.get('Error'):
             return clean(rows)
-        message = f"1 {table.rstrip('s')} entry found"
+        message = f"1 {table_name.rstrip('s')} entry found"
     elif isinstance(rows, list):
-        message = f"found {len(rows)} {table.rstrip('s')} entries"
+        message = f"found {len(rows)} {table_name.rstrip('s')} entries"
     else:
-        message = f"0 {table.rstrip('s')} entries found using supplied parameters"
-        rows = {"supplied": [params] + [{"filter": filters}]}
+        message = f"0 {table_name.rstrip('s')} entries found using submitted parameters"
+        rows = {"submitted": [params] + [{"filter": filters}]}
 
     # -- send response message
     res = {"message": message, "data": rows}
@@ -116,44 +128,54 @@ def get(db, table="", url_paths=""):
 #                  Core Function /edit - Edit Data in a Table                 #
 ###############################################################################
 @route("/edit", method=["GET", "POST", "PUT", "DELETE"])
-@route("/edit/<table>", method=["GET", "POST", "PUT", "DELETE"])
-@route("/edit/<table>/<url_paths:path>", method=["GET", "POST", "PUT", "DELETE"])
-def edit(db, table="", url_paths=""):
+@route("/edit/<table_name>", method=["GET", "POST", "PUT", "DELETE"])
+@route("/edit/<table_name>/<url_paths:path>", method=["GET", "POST", "PUT", "DELETE"])
+def edit(db, table_name="", url_paths=""):
     print(f"request.params = {dict(request.params)}")
-    if table == 'usage':
+    if table_name == 'usage':
         return usage_edit
-    if ((not table) or (table not in [t["name"] for t in getTables(db)])):
-        return clean({"message": "active tables in the database", "tables": getTables(db)})
+
+    tables = getTables(db)
+    table = getTable(db, tables, table_name)
+    if not table:
+        return clean({"message": "active tables in the database", "tables": tables})
 
     # -- parse "params" and "filters" from HTTP request
-    all_columns, col_info = getColumns(db, table, col=True)
-    editable_columns = getColumns(db, table, all_columns, required=True)
-    non_edit_columns = getColumns(db, table, all_columns, non_editable=True)
-    params, filters  = parseUrlPaths(url_paths, request.params, all_columns)
+    # all_columns, col_info = getColumns(db, table, col=True)
+    editable_columns = getColumns(db, table, editable=True)
+    non_edit_columns = getColumns(db, table, non_editable=True)
+    params, filters  = parseUrlPaths(url_paths, request.params, table["columns"])
     print(f"params = {params}\nfilters = '{filters}'")
 
     # -- the users table requires additional formatting and checking
-    if (table == "users") and params.get("password"):
+    if (table_name == "users") and params.get("password"):
         params.update({"password": securePassword(params["password"])})
 
     # -- at least 1 edit parameter required
-    if not any(k in params.keys() for k in editable_columns):
-        res = {"message": "missing a parameter to edit",
-               "editable": extract(col_info, editable_columns), "supplied": [params]}
+    # if not any(k in params.keys() for k in editable_columns):
+    if not (editable_columns.keys() & params.keys()):
+        # res = {"message": "missing a parameter to edit",
+        #        "editable": extract(col_info, editable_columns), "submitted": [params]}
+        res = {"message": "missing a parameter to edit", "editable": [editable], "submitted": [params] + [{'filter': filters}]}
         return clean(res)
 
     # -- at least 1 query parameter required
-    # supplied = {'filter': filters} | params if filters else params
-    supplied = {**{'filter': filters}, **params}
-    query_params = non_edit_columns + ["filter"]
-    if not any(k in supplied.keys() for k in query_params):
-        res = {"message": "missing a query parameter",
-               "query_params": extract(col_info, query_params), "supplied": [params] + [{'filter': filters}]}
+    # submitted = {'filter': filters} | params if filters else params
+    submitted = {**{'filter': filters}, **params}
+    # query_params = non_edit_columns + ["filter"]
+    query_params = {**non_edit_columns, **{"filter": filters}}
+    # if not any(k in submitted.keys() for k in query_params):
+    if not (submitted.keys() & query_params.keys()):
+        # res = {"message": "missing a query parameter",
+        #        "query_params": extract(col_info, query_params), "submitted": [params] + [{'filter': filters}]}
+        res = {"message": "missing a query parameter", "query_params": [query_params], "submitted": [submitted]}
         return clean(res)
 
     # -- define "columns" to edit and "values" to insert (parsed from params in HTTP request)
-    columns    = [column for column in editable_columns if params.get(column)]
-    col_values = [params[column] for column in columns]
+    edit_items = {k: params[k] for k in editable_columns if params.get(k)}
+    columns, col_values = list(edit_items.keys()), list(edit_items.values())
+    # columns    = [column for column in editable_columns if params.get(column)]
+    # col_values = [params[column] for column in columns]
 
     # -- build "conditions" string and "values" string/array for "updateRow()"
     conditions = " AND ".join([f"{param}=?" for param in non_edit_columns if params.get(param)])
@@ -172,45 +194,52 @@ def edit(db, table="", url_paths=""):
             return clean(num_edits)
     elif num_edits:
         if num_edits == 1:
-            message = f"edited 1 {table.rstrip('s')} entry"
+            message = f"edited 1 {table_name.rstrip('s')} entry"
         else:
-            message = f"edited {num_edits} {table.rstrip('s')} entries"
+            message = f"edited {num_edits} {table_name.rstrip('s')} entries"
     else:
-        message = f"0 {table.rstrip('s')} entries found matching your parameters"
+        message = f"0 {table_name.rstrip('s')} entries found matching your parameters"
 
     # -- send response message
-    res = {"message": message, "supplied": [params] + [{'filter': filters}]}
+    # res = {"message": message, "submitted": [params] + [{'filter': filters}]}
+    res = {"message": message, "submitted": [submitted]}
     return clean(res)
 
 ###############################################################################
 #             Core Function /delete - Delete Data from a Table                #
 ###############################################################################
 @route("/delete", method=["GET", "POST", "PUT", "DELETE"])
-@route("/delete/<table>", method=["GET", "POST", "PUT", "DELETE"])
-@route("/delete/<table>/<url_paths:path>", method=["GET", "POST", "PUT", "DELETE"])
-def edit(db, table="", url_paths=""):
+@route("/delete/<table_name>", method=["GET", "POST", "PUT", "DELETE"])
+@route("/delete/<table_name>/<url_paths:path>", method=["GET", "POST", "PUT", "DELETE"])
+def delete(db, table_name="", url_paths=""):
     print(f"request.params = {dict(request.params)}")
-    if table == 'usage':
+    if table_name == 'usage':
         return usage_delete
-    if ((not table) or (table not in [t["name"] for t in getTables(db)])):
-        return clean({"message": "active tables in the database", "tables": getTables(db)})
+
+    tables = getTables(db)
+    table = getTable(db, tables, table_name)
+    # if ((not table) or (table not in [t["name"] for t in getTables(db)])):
+    if not table:
+        return clean({"message": "active tables in the database", "tables": tables})
 
     # -- parse "params" and "filters" from HTTP request
-    all_columns = getColumns(db, table)
-    params, filters  = parseUrlPaths(url_paths, request.params, all_columns)
+    # all_columns = getColumns(db, table)
+    params, filters  = parseUrlPaths(url_paths, request.params, table["columns"])
     print(f"params = {params}\nfilters = '{filters}'")
 
     # -- to prevent accidental deletion of everything, at least 1 parameter is required
-    # supplied = {'filter': filters} | params if filters else params
-    supplied = {{'filter': filters}, params} if filters else params
-    query_params = all_columns + ["filter"]
-    if not any(k in supplied.keys() for k in query_params):
-        res = {"message": "missing a query param(s)", "query_params": query_params, "supplied": supplied}
+    # submitted = {'filter': filters} | params if filters else params
+    submitted = {{'filter': filters}, params} if filters else params
+    # query_params = all_columns + ["filter"]
+    query_params = {**table["columns"], **{"filter": filters}}
+    # if not any(k in submitted.keys() for k in query_params):
+    if not (submitted.keys() & query_params.keys()):
+        res = {"message": "missing a query param(s)", "query_params": [query_params], "submitted": [submitted]}
         return clean(res)
 
     # -- build "conditions" string and "values" string/array for "updateRow()"
-    conditions = " AND ".join([f"{param}=?" for param in all_columns if params.get(param)])
-    values     = [params[param] for param in all_columns if params.get(param)]
+    conditions = " AND ".join([f"{param}=?" for param in table["columns"] if params.get(param)])
+    values     = [params[param] for param in table["columns"] if params.get(param)]
     if filters:
         conditions, values = parseFilters(filters, conditions, values)
 
@@ -221,14 +250,14 @@ def edit(db, table="", url_paths=""):
             return clean(num_deletes)
     elif num_deletes:
         if num_deletes == 1:
-            message = f"1 {table.rstrip('s')} entry deleted"
+            message = f"1 {table_name.rstrip('s')} entry deleted"
         else:
-            message = f"{num_deletes} {table.rstrip('s')} entries deleted"
+            message = f"{num_deletes} {table_name.rstrip('s')} entries deleted"
     else:
-        message = f"0 {table.rstrip('s')} entries found matching your parameters"
+        message = f"0 {table_name.rstrip('s')} entries found matching your parameters"
 
     # -- send response message
-    res = {"message": message, "supplied": request.params}
+    res = {"message": message, "submitted": [submitted]}
     return clean(res)
 
 ###############################################################################
@@ -238,13 +267,14 @@ def edit(db, table="", url_paths=""):
 @route("/login/<url_paths:path>", method=["GET", "POST", "PUT", "DELETE"])
 def login(db, url_paths=""):
     # -- parse "params" and "filters" from HTTP request
-    required_columns = getColumns(db, table="users", required=True)
+    table = getTable(db, table_name="users")
+    required_columns = getColumns(db, table, required=True)
     params, filters  = parseUrlPaths(url_paths, request.params, required_columns)
     print(f"params = {params}\nfilters = '{filters}'")
 
     # -- check for required parameters
     if any(k not in params.keys() for k in required_columns):
-        res = {"message": "missing parameters", "required": required_columns, "supplied": params}
+        res = {"message": "missing parameters", "required": [required_columns], "submitted": [params]}
         return clean(res)
 
     # -- check if user exists
@@ -253,7 +283,7 @@ def login(db, url_paths=""):
         res = {"message": "user does not exist", "username": params["username"]}
         return clean(res)
 
-    # -- check user supplied password against the one retrieved from the database
+    # -- check user submitted password against the one retrieved from the database
     if not checkPassword(params["password"], row["password"]):
         res = {"message": "incorrect password", "password": params["password"]}
         return clean(res)
@@ -274,33 +304,37 @@ def logout(db):
 #                          Database Admin Functions                           #
 ###############################################################################
 @route("/dropTable")
-@route("/dropTable/<table>")
-def dropTable(db, table=""):
-    if table == 'usage':
+@route("/dropTable/<table_name>")
+def dropTable(db, table_name=""):
+    if table_name == 'usage':
         return usage_delete_table
-    if ((not table) or (table not in [t["name"] for t in getTables(db)])):
-        return clean({"message": "active tables in the database", "tables": getTables(db)})
+    tables = getTables(db)
+    table = getTable(db, tables, table_name)
+
+    # if ((not table) or (table not in [t["name"] for t in getTables(db)])):
+    if not table:
+        return clean({"message": "active tables in the database", "tables": tables})
 
     # -- DROP TABLE <table>
-    res = deleteTable(db, table=table)
-    res.update({"table": table})
+    res = deleteTable(db, table=table_name)
+    res.update({"table": table_name})
     return clean(res)
 
 @route("/createTable")
-@route("/createTable/<table>")
-@route("/createTable/<table>/<url_paths:path>", method=["GET", "POST", "PUT", "DELETE"])
-def createTable(db, table="", url_paths=""):
+@route("/createTable/<table_name>")
+@route("/createTable/<table_name>/<url_paths:path>", method=["GET", "POST", "PUT", "DELETE"])
+def createTable(db, table_name="", url_paths=""):
     if table == 'usage':
         return usage_create_table
-    if ((not table) or (not url_paths)):
+    if ((not table_name) or (not url_paths)):
         return clean({"message": "active tables in the database", "tables": getTables(db)})
 
     # -- parse "params" and "url_paths" from HTTP request
-    params, columns = mapUrlPaths(url_paths, request.params, table)
+    params, columns = mapUrlPaths(url_paths, request.params, table_name)
 
     # -- CREATE TABLE <table>
-    res = addTable(db, table=table, columns=columns)
-    res.update({"table": table})
+    res = addTable(db, table=table_name, columns=columns)
+    res.update({"table": table_name})
     return clean(res)
 
 
@@ -397,7 +431,7 @@ def addUser(db):
 
     # -- check for required parameters
     if any(k not in params.keys() for k in required_columns):
-        res = {"message": "missing paramaters", "required": required_columns, "supplied": request.params}
+        res = {"message": "missing paramaters", "required": required_columns, "submitted": request.params}
         return clean(res)
 
     # -- update params to include encrypted "password"
@@ -467,19 +501,19 @@ def editUser(db):
     non_edit_columns = getColumns(db, table, all_columns, non_editable=True)
     params = {k:v for (k,v) in request.params.items() if k in all_columns}
 
-    # -- if "password" is supplied, update params with encrypted "password"
+    # -- if "password" is submitted, update params with encrypted "password"
     if params.get("password"):
         params.update({"password": securePassword(params["password"])})
 
     # -- at least 1 edit parameter required
     if not any(k in params.keys() for k in editable_columns):
-        res = {"message": "missing edit parameter", "editable": editable_columns, "supplied": request.params}
+        res = {"message": "missing edit parameter", "editable": editable_columns, "submitted": request.params}
         return clean(res)
 
     # -- at least 1 query parameter required
     query_params = non_edit_columns + ["filter"]
     if not any(k in params.keys() for k in query_params):
-        res = {"message": "missing query parameter", "query_params": query_params, "supplied": request.params}
+        res = {"message": "missing query parameter", "query_params": query_params, "submitted": request.params}
         return clean(res)
 
     # -- define "columns" to edit and "values" to insert (parsed from params in HTTP request)
@@ -513,7 +547,7 @@ def editUser(db):
         message = f"0 {table.rstrip('s')} entries found matching your parameters"
 
     # -- send response message
-    res = {"message": message, "supplied": request.params}
+    res = {"message": message, "submitted": request.params}
     return clean(res)
 
 @route('/deleteUser', method=["GET", "POST", "PUT", "DELETE"])
@@ -528,7 +562,7 @@ def deleteUser(db):
     # -- to prevent accidental deletion of everything, at least 1 parameter is required
     query_params = all_columns + ["filter"]
     if not any(k in params.keys() for k in query_params):
-        res = {"message": "missing query paramater", "query_params": query_params, "supplied": request.params}
+        res = {"message": "missing query paramater", "query_params": query_params, "submitted": request.params}
         return clean(res)
 
     # -- build "conditions" string and "values" string/array for "deleteRow()"
@@ -551,7 +585,7 @@ def deleteUser(db):
         message = f"0 {table.rstrip('s')} entries found matching your parameters"
 
     # -- send response message
-    res = {"message": message, "supplied": request.params}
+    res = {"message": message, "submitted": request.params}
     return clean(res)
 
 ###############################################################################
@@ -567,7 +601,7 @@ def addSensorData(db):
 
     # -- check for required parameters
     if any(k not in params.keys() for k in required_columns):
-        res = {"message": "missing paramaters", "required": required_columns, "supplied": request.params}
+        res = {"message": "missing paramaters", "required": required_columns, "submitted": request.params}
         return clean(res)
 
     # -- define "columns" to edit and "values" to insert
@@ -637,7 +671,7 @@ def editSensorData(db):
     # -- at least 1 query parameter required
     query_params = non_edit_columns + ["filter"]
     if not any(k in params.keys() for k in query_params):
-        res = {"message": "missing query parameter", "query_params": query_params, "supplied": request.params}
+        res = {"message": "missing query parameter", "query_params": query_params, "submitted": request.params}
         return clean(res)
 
     # -- define "columns" to edit and "values" to insert (parsed from params in HTTP request)
@@ -671,7 +705,7 @@ def editSensorData(db):
         message = f"0 {table.rstrip('s')} entries found matching your parameters"
 
     # -- send response message
-    res = {"message": message, "supplied": request.params}
+    res = {"message": message, "submitted": request.params}
     return clean(res)
 
 @route("/deleteSensorData", method=["GET", "POST", "PUT", "DELETE"])
@@ -686,7 +720,7 @@ def deleteSensorData(db):
     # -- to prevent accidental deletion of everything, at least 1 parameter is required
     query_params = all_columns + ["filter"]
     if not any(k in params.keys() for k in query_params):
-        res = {"message": "missing query paramater", "query_params": query_params, "supplied": request.params}
+        res = {"message": "missing query paramater", "query_params": query_params, "submitted": request.params}
         return clean(res)
 
     # -- build "conditions" string and "values" string/array for "deleteRow()"
@@ -709,6 +743,6 @@ def deleteSensorData(db):
         message = f"0 {table.rstrip('s')} entries found matching your parameters"
 
     # -- send response message
-    res = {"message": message, "supplied": request.params}
+    res = {"message": message, "submitted": request.params}
     return clean(res)
 """

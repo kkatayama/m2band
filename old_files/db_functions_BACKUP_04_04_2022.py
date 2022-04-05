@@ -73,8 +73,7 @@ def insertRow(db, query="", **kwargs):
     if query:
         col_values = kwargs.get("col_values")
     else:
-        # table      = kwargs["table"]
-        table      = kwargs["table"]["name"] if isinstance(kwargs.get("table"), dict) else kwargs.get("table")
+        table      = kwargs["table"]
         columns    = kwargs["columns"]
         col_values = kwargs["col_values"]
         query = f"INSERT INTO {table} ({','.join(columns)}) VALUES ({', '.join(['?']*len(columns))});"
@@ -131,8 +130,7 @@ def fetchRow(db, query="", **kwargs):
     if query:
         values = [kwargs.get("values")] if isinstance(kwargs.get("values"), str) else kwargs.get("values")
     else:
-        # table     = kwargs.get("table")
-        table     = kwargs["table"]["name"] if isinstance(kwargs.get("table"), dict) else kwargs.get("table")
+        table     = kwargs.get("table")
         columns   = "*" if not kwargs.get("columns") else ",".join(kwargs["columns"])
         condition = "1" if not kwargs.get("where") else f'({kwargs["where"]})'
         values    = [kwargs.get("values")] if isinstance(kwargs.get("values"), str) else kwargs.get("values")
@@ -163,8 +161,6 @@ def fetchRows(db, query="", **kwargs):
         Optional - columns (list)       - columns to filter by
         Optional - where (str)          - conditional "WHERE" statement
         Optional - values (str|list)    - the value(s) for the "WHERE" statement
-
-        Optional - force (bool)         - force return type list
     RETURNS:
         rows (list[(dict)]) OR False - the rows of data as a (list) of (dict) objects
 
@@ -189,7 +185,7 @@ def fetchRows(db, query="", **kwargs):
     if query:
         values = [kwargs.get("values")] if isinstance(kwargs.get("values"), str) else kwargs.get("values")
     else:
-        table     = kwargs["table"]["name"] if isinstance(kwargs.get("table"), dict) else kwargs.get("table")
+        table     = kwargs.get("table")
         columns   = "*" if not kwargs.get("columns") else ",".join(kwargs["columns"])
         condition = "1" if not kwargs.get("where") else f'({kwargs["where"]})'
         values    = [kwargs.get("values")] if isinstance(kwargs.get("values"), str) else kwargs.get("values")
@@ -205,7 +201,7 @@ def fetchRows(db, query="", **kwargs):
         return {"Error": e.args, "query": query, "values": values, "kwargs": kwargs}
 
     if rows:
-        if ((len(rows) == 1) and (not kwargs.get("force"))):
+        if len(rows) == 1:
             return dict(rows[0])
         return [dict(row) for row in rows]
     return False
@@ -260,8 +256,7 @@ def updateRow(db, query="", **kwargs):
         col_values = kwargs.get("col_values")
         values     = [kwargs.get("values")] if isinstance(kwargs.get("values"), str) else kwargs.get("values")
     else:
-        table      = kwargs["table"]["name"] if isinstance(kwargs.get("table"), dict) else kwargs.get("table")
-        # table      = kwargs.get("table")
+        table      = kwargs.get("table")
         # columns    = ", ".join([f"{col}=?" for col in kwargs["columns"]])
         # col_values = kwargs["col_values"]
         columns, col_values = parseColumnValues(kwargs["columns"], kwargs["col_values"])
@@ -319,8 +314,7 @@ def deleteRow(db, query="", **kwargs):
     if query:
         values = [kwargs["values"]] if isinstance(kwargs["values"], str) else kwargs["values"]
     else:
-        # table      = kwargs.get("table")
-        table      = kwargs["table"]["name"] if isinstance(kwargs.get("table"), dict) else kwargs.get("table")
+        table      = kwargs.get("table")
         condition  = f'({kwargs["where"]})'
         values     = [kwargs["values"]] if isinstance(kwargs["values"], str) else kwargs["values"]
         query = f"DELETE FROM {table} WHERE {condition};"
@@ -341,8 +335,7 @@ def deleteRow(db, query="", **kwargs):
 # DB Functions ################################################################
 def addTable(db, query="", **kwargs):
     if not query:
-        # table = kwargs.get("table")
-        table = kwargs["table"]["name"] if isinstance(kwargs.get("table"), dict) else kwargs.get("table")
+        table = kwargs.get("table")
         columns = kwargs.get("columns")
         query = f'CREATE TABLE {table} ({", ".join(columns)});'
     print(query)
@@ -355,8 +348,7 @@ def addTable(db, query="", **kwargs):
 
 def deleteTable(db, query="", **kwargs):
     if not query:
-        # table = kwargs.get("table")
-        table = kwargs["table"]["name"] if isinstance(kwargs.get("table"), dict) else kwargs.get("table")
+        table = kwargs.get("table")
         query = f"DROP TABLE {table};"
     print(query)
 
@@ -367,46 +359,54 @@ def deleteTable(db, query="", **kwargs):
         return {"Error": e.args, "query": query, "values": values, "kwargs": kwargs}
     return {"message": f"{abs(cur.rowcount)} table deleted!"}
 
-def getTable(db, tables=[], table_name=''):
-    if not tables:
-        tables = getTables(db)
-    # table = next((filter(lambda t: t["name"] == table_name, tables)), None)
-    table = dict(*filter(lambda t: t["name"] == table_name, tables))
-    if table:
-        table["columns"] = {c["name"]: c["type"].split()[0] for c in table["columns"]}
-    return table
+def getTable(tables, table_name):
+    table = next((filter(lambda t: t["name"] == table_name, tables)), None)
 
 def getTables(db):
     args = {
         "table": 'sqlite_schema',
-        # "columns": ["name", "type", "sql"],
-        "columns": ["name", "type"],
+        "columns": ["name", "type", "sql"],
         "where": "type = ? AND name NOT LIKE ?",
-        "values": ['table', 'sqlite_%'],
-        "force": True,
+        "values": ['table', 'sqlite_%']
     }
     tables = fetchRows(db, **args)
+    if isinstance(tables, dict):
+        tables = [tables]
+
     for table in tables:
-        table["columns"] = getColumns(db, table)
+        columns, col_info = getColumns(db, table["name"], col=True)
+        table["columns"] = col_info
+        sql = table.pop("sql")
+        # text = (f"""(?P<name>({"|".join(columns)})) (?P<type>([mdfA-Z\(\)\'\"\_\-.\:%\s]*))""")
+        # regex = r"{}".format(text)
+        # r = re.compile(regex)
+        # table["columns"] = [m.groupdict() for m in r.finditer(sql)]
+        # table["columns"][-1]["type"] = table["columns"][-1]["type"] + re.search(
+        #     r"(?P<end>, 'NOW'(.*))", sql
+        # ).groupdict().get("end")
 
     return tables
 
-def getColumns(db, table, required=False, editable=False, non_editable=False, ref=False):
-    if not table.get("columns"):
-        query = f'PRAGMA table_info({table["name"]});'
-        rows = db.execute(query).fetchall()
-        col_info = []
-        for row in [dict(row) for row in rows]:
-            dflt = row["dflt_value"]
-            info = {"name": row["name"], "type": f'{row["type"]} {"PRIMARY KEY" if row["pk"] else ""}'}
-            info["type"] += f'{"NOT NULL"}' if row["notnull"] else ""
-            info["type"] += f" DEFAULT ({dflt})" if dflt else ""
-            col_info.append(info)
-        return col_info
+def getColumns(db, table, all_columns=[],
+               required=False, editable=False, non_editable=False, ref=False, col=False):
+    # print(f'table now === {table}')
+    if not all_columns:
+        query = f"PRAGMA table_info({table});"
+        rows  = db.execute(query).fetchall()
+        all_columns = [row['name'] for row in rows]  # all_columns = [row[1] for row in rows]
+        if col:
+            col_info = []
+            for row in [dict(row) for row in rows]:
+                dflt = row["dflt_value"]
+                info = {"name": row["name"], "type": f'{row["type"]} {"PRIMARY KEY" if row["pk"] else ""}'}
+                info["type"] += f'{"NOT NULL"}' if row["notnull"] else ""
+                info["type"] += f' DEFAULT ({dflt})' if dflt else ""
+                col_info.append(info)
+            return all_columns, col_info
 
-    regex = r"(_id|_time)" if table["name"] == "users" else r"((?<!user)_id|_time)"
-    editable_columns = {key: table["columns"][key] for key in table["columns"] if not re.search(regex, key)}
-    non_editable_columns = {key: table["columns"][key] for key in table["columns"] if re.search(regex, key)}
+    regex = r"(_id|_time)" if table == "users" else r"((?<!user)_id|_time)"
+    editable_columns = [column for column in all_columns if not re.search(regex, column)]
+    non_editable_columns = [column for column in all_columns if re.search(regex, column)]
 
     if required or editable:
         return editable_columns
@@ -414,8 +414,7 @@ def getColumns(db, table, required=False, editable=False, non_editable=False, re
         return non_editable_columns
     if ref:
         return re.search(r"(.*_id)", " ".join(non_editable_columns)).group()
-    return table["columns"]
-
+    return all_columns
 
 # Utility Functions ###########################################################
 def securePassword(plaintext):
