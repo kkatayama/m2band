@@ -457,7 +457,7 @@ def clean(data):
     str_data = json.dumps(data, default=str, indent=2)
     if re.search(regex, user_agent):
         print(str_data)
-        return(str_data.replace('\n', '\n<br />'))
+        return template('<pre> {{str_data}} </pre>', str_data=str_data)
 
     cleaned = json.loads(str_data)
     print(cleaned)
