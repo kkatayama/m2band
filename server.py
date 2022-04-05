@@ -46,7 +46,7 @@ def add(db, table="", url_paths=""):
 
     # -- check for required parameters
     if any(k not in params.keys() for k in required_columns):
-        res = {"message": "missing paramaters", "required": required_columns, "supplied": {"params": params}}
+        res = {"message": "missing paramaters", "required": required_columns, "supplied": [params]}
         return clean(res)
 
     # -- the users table requires additional formatting and checking
@@ -106,7 +106,7 @@ def get(db, table="", url_paths=""):
         message = f"found {len(rows)} {table.rstrip('s')} entries"
     else:
         message = f"0 {table.rstrip('s')} entries found using supplied parameters"
-        rows = {"supplied": {"params": params, "filter": filters}}
+        rows = {"supplied": [params] + [{"filter": filters}]}
 
     # -- send response message
     res = {"message": message, "data": rows}
@@ -139,7 +139,7 @@ def edit(db, table="", url_paths=""):
     # -- at least 1 edit parameter required
     if not any(k in params.keys() for k in editable_columns):
         res = {"message": "missing a parameter to edit",
-               "editable": extract(col_info, editable_columns), "supplied": {"params": params}}
+               "editable": extract(col_info, editable_columns), "supplied": [params]}
         return clean(res)
 
     # -- at least 1 query parameter required
@@ -148,7 +148,7 @@ def edit(db, table="", url_paths=""):
     query_params = non_edit_columns + ["filter"]
     if not any(k in supplied.keys() for k in query_params):
         res = {"message": "missing a query parameter",
-               "query_params": extract(col_info, query_params), "supplied": {'params': params, 'filter': filters}}
+               "query_params": extract(col_info, query_params), "supplied": [params] + [{'filter': filters}]}
         return clean(res)
 
     # -- define "columns" to edit and "values" to insert (parsed from params in HTTP request)
@@ -179,7 +179,7 @@ def edit(db, table="", url_paths=""):
         message = f"0 {table.rstrip('s')} entries found matching your parameters"
 
     # -- send response message
-    res = {"message": message, "supplied": {'params': params, 'filter': filters}}
+    res = {"message": message, "supplied": [params] + [{'filter': filters}]}
     return clean(res)
 
 ###############################################################################
