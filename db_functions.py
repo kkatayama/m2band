@@ -446,6 +446,7 @@ def clean(data):
         "MSIE",
         "Trident",
     ]
+    print(f'user_agent = {user_agent}')
     regex = r"({})".format("|".join(browser_agents))
 
     if isinstance(data, dict):
