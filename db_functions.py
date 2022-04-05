@@ -20,6 +20,7 @@ from datetime import datetime
 from functools import wraps
 from pathlib import Path
 from rich import print
+from bs4 import BeautifulSoup
 import subprocess
 import logging
 import sqlite3
@@ -592,8 +593,10 @@ def log_to_logger(fn):
                 logger.info(json.dumps({"request.params": dict(request.params)}))
                 logger.info(json.dumps(actual_response, default=str, indent=2))
         else:
-            logger.info(json.dumps({"request.params": dict(request.params)}))
-            logger.info(actual_response)
+            soup = BeautifulSoup(actual_response, 'html5lib')
+            logger.info(json.dumps(json.loads(soup.select_one("pre").getText()), indent=2))
+            # logger.info(json.dumps({'msg': }, default=str, indent=2))
+            # logger.info(actual_response)
         return actual_response
     return _log_to_logger
 
