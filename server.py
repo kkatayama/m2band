@@ -46,7 +46,7 @@ def add(db, table="", url_paths=""):
 
     # -- check for required parameters
     if any(k not in params.keys() for k in required_columns):
-        res = {"message": "missing paramaters", "required": required_columns, "supplied": request.params}
+        res = {"message": "missing paramaters", "required": required_columns, "supplied": request.params|params}
         return clean(res)
 
     # -- the users table requires additional formatting and checking
