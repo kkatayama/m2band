@@ -432,12 +432,31 @@ def checkPassword(plaintext, hex_pass):
         return True
     return False
 
-def clean(data, i=0):
+def clean(data):
+    user_agent = request.environ["HTTP_USER_AGENT"] if request.environ.get("HTTP_USER_AGENT") else ""
+    browser_agents = [
+        "Firefox",
+        "Seamonkey",
+        "Chrome",
+        "Chromium",
+        "Safari",
+        "OPR",
+        "Opera",
+        "MSIE",
+        "Trident",
+    ]
+    regex = r"({})".format("|".join(browser_agents))
+
     if isinstance(data, dict):
         for k, v in data.items():
             if isinstance(v, FormsDict):
                 data.update({k: dict(v)})
-    str_data = json.dumps(data, default=str, indent=i)
+
+    str_data = json.dumps(data, default=str, indent=2)
+    if re.search(regex, user_agent):
+        print(str_data)
+        return(str_data)
+
     cleaned = json.loads(str_data)
     print(cleaned)
     return cleaned
