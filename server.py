@@ -106,10 +106,10 @@ def get(db, table="", url_paths=""):
         message = f"found {len(rows)} {table.rstrip('s')} entries"
     else:
         message = f"0 {table.rstrip('s')} entries found using supplied parameters"
-        rows = {"supplied": request.params}
+        rows = {"supplied": {"params": params, "filter": filters}}
 
     # -- send response message
-    res = {"message": message, "data": clean(rows)}
+    res = {"message": message, "data": rows}
     return clean(res)
 
 ###############################################################################
