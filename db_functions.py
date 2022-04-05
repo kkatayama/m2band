@@ -135,13 +135,16 @@ def fetchRow(db, query="", **kwargs):
         # table     = kwargs.get("table")
         table     = kwargs["table"]["name"] if isinstance(kwargs.get("table"), dict) else kwargs.get("table")
         columns   = "*" if not kwargs.get("columns") else ",".join(kwargs["columns"])
-        condition = None if not kwargs.get("where") else f'({kwargs["where"]})'
+        # condition = "1" if not kwargs.get("where") else f'({kwargs["where"]})'
+        condition = "1" if not kwargs.get("where") else f'{kwargs["where"]}'
         values    = [kwargs.get("values")] if isinstance(kwargs.get("values"), str) else kwargs.get("values")
+        query = f"SELECT {columns} FROM {table} WHERE {condition};"
 
-        if condition:
-            query = f"SELECT {columns} FROM {table} WHERE {condition};"
-        else:
-            query = f"SELECT {columns} FROM {table};"
+        # if condition:
+        #     query = f"SELECT {columns} FROM {table} WHERE {condition};"
+        # else:
+        #     query = f"SELECT {columns} FROM {table};"
+    print({'kwargs': kwargs})
 
     print(query)
     if values:
@@ -197,15 +200,16 @@ def fetchRows(db, query="", **kwargs):
     else:
         table     = kwargs["table"]["name"] if isinstance(kwargs.get("table"), dict) else kwargs.get("table")
         columns   = "*" if not kwargs.get("columns") else ",".join(kwargs["columns"])
-        condition = "1" if not kwargs.get("where") else f'({kwargs["where"]})'
+        # condition = "1" if not kwargs.get("where") else f'({kwargs["where"]})'
+        condition = "1" if not kwargs.get("where") else f'{kwargs["where"]}'
         values    = [kwargs.get("values")] if isinstance(kwargs.get("values"), str) else kwargs.get("values")
 
-        if condition:
-            query = f"SELECT {columns} FROM {table} WHERE {condition};"
-        else:
-            query = f"SELECT {columns} FROM {table};"
-
-        # query = f"SELECT {columns} FROM {table} WHERE {condition};"
+        # if condition:
+        #     query = f"SELECT {columns} FROM {table} WHERE {condition};"
+        # else:
+        #     query = f"SELECT {columns} FROM {table};"
+        query = f"SELECT {columns} FROM {table} WHERE {condition};"
+    print({'kwargs': kwargs})
     print(query)
     if values:
         print(" "*query.find("?"), values)
