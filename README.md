@@ -1,25 +1,3 @@
-I added the `/editSensorData` function and completely reorganized the **framework layout**.
-
-After our last meeting, I examined the framework and thought about the steps that
-would be needed to add new tables to the database.  How trivial would it be to
-copy the existing functions, rename parameters, and integrate requests with minimal
-effort and errors.
-
-With the current framework design, simply copying existing functions and adjusting
-parameters turned out to be more challenging than I had previously imagined and
-proved to be quite confusing to keep track of the arguments being passed around.
-
-The two existing tables, "users" and "oximeter", referenced many independant
-functions and operations with only a few that wereoverlapping.
-Clearly, both tables were using more functions than needed.
-
-So, I decided to condense the framework by replacing the "indepent-to-table"
-functions with efficient and adaptable core functions that would integrate
-with all existing tables and adapt to future tables.
-
-To organize and simplify the framework, I defined a set of **Design Rules** for all **`tables`**,  **`column_names`**, and `core functions`.
-Adhering to these *design contraints* will allow for quick integrations of additional `tables` with minimal code updates.
-
 # Web Framework
 [https://m2band.hopto.org](https://m2band.hopto.org)
 
