@@ -7,11 +7,11 @@ Framework is loosely modeled after CRUD: [C]reate [R]ead [U]pdate [D]elete
  * *Admin Functions* - **`/createTable`** and **`/deleteTable`**
  * *User Functions* - **`/login`** and **`/logout`**
  * *Core Functions* - [**`/add`**](#1-add), [**`/get`**](#2-get), [**`/edit`**](#3-edit), [**`/delete`**](4-delete)
- * Query and URL path paramater support
+ * Query and URL path parameter support
  * Additional **filter** parameter - enables SQLite expressions containing operators 
  * In-place column editing with SQLite3 expression support
  * [**`/get`**](#2-get), [**`/edit`**](#3-edit), [**`/delete`**](4-delete) support single and multiple simultaneous table transactions
- * Changes made to the **m2band.db** database are now automatically updated to the github repo in *real-time*
+ * Changes made to the **m2band.db** database are now automatically updated to the GitHub repo in *real-time*
 
 **Design Constrains:**
 * All  **`table_names`** and **`column_names`** are defined with **lowercase** letters
@@ -28,7 +28,7 @@ These functions represent the main endpoints of the framework and will handle th
 3. [**`/edit`**](#3-edit) - Edit a *single* entry or *multiple* entries in a `table`
 4. [**`/delete`**](4-delete) - Delete a *single* entry or *multiple* entries from a `table`
 
-#### Debugging Tip
+#### Debugging Tip!
 To see all of the available `tables` along with the `column_names` and the `column_types`, make a request to the root path of any core function
 
 Request:
@@ -75,28 +75,25 @@ All endpoints support 4  *HTTP_METHODS*: **GET**, **POST**, **PUT**, **DELETE**
 # 1. `/add`
 **Add a *single* entry to a `table`**
 
-**Endpoints:**
-
-| resource | description  |
+### Endpoints:
+| Resource | Description  |
 |:--|:--|
 | **`/add`**  | returns a list of all existing tables in the database |
 | **`/add/usage`**  | returns a message for how to use this function |
-| **`/add/{table_name}`**  | returns the required parameters need to add an entry to a table |
-| **`/add/{table_name}/{param_name}/{param_value}`**  | add a single entry to the table  using path parameters |
+| **`/add/{table_name}`**  | DEBUG: returns the required parameters |
+| **`/add/{table_name}/{param_name}/{param_value}`**  | add a single entry to the table using path parameters |
 | **`/add/{table_name}?param_name=param_value`**  | add a single entry to the table using query parameters |
 
-**Requirements:**
-
-| parameters | comment  |
+### Requirements:
+| Parameters | Comment  |
 |:--|:--|
 | `user_id` and all parameters not **`*_id`** or **`*_time`** | Exception: `user_id` is required for **`users`** table |
 
-> Note: <br />
-> 
+Note: <br />
 > The old functions `/addUser` and `/addSensorData` still work but are kept for backward compatibility. <br />
 > `/addUser` has migrated to: `/add/users` <br />
 > `/addSensorData` has migrated to: `/add/oximeter` <br />
-> It is recommened to update the existing *mp32* and *swift* code to follow the new format
+> It is recommended to update the existing *mp32* and *swift* code to follow the new format
 
 ## Workflow Example:
 * Let's add 2 users to the **`users`** table: `alice` and `bob`
@@ -114,7 +111,7 @@ Request:
 Response:
 ```json
 {
-  "message": "missing paramaters", 
+  "message": "missing parameters", 
   "required": [{"username": "TEXT", "password": "TEXT"}], 
   "missing": [{"username": "TEXT", "password": "TEXT"}], 
   "submitted": [{}]
@@ -131,7 +128,7 @@ Request:
 Response:
 ```json
 {
-  "message": "missing paramaters",
+  "message": "missing parameters",
   "required": [{"username": "TEXT", "password": "TEXT"}],
   "missing": [{"password": "TEXT"}],
   "submitted": [{"username": "alice"}]
@@ -141,7 +138,7 @@ Response:
 To add the user `alice`, we need to provide the **username** and **password** parameters
 There are several ways to do this: using **url_parameters**, **query_parameters**, or a combination of both.
 
-**Recommended Method: Using url_arameters**
+**Recommended Method: Using URL_Parameters**
 ```ruby
 /add/users/username/alice/password/alice
 ```
@@ -199,7 +196,7 @@ Request:
 Response:
 ```json
 {
-    "message": "missing paramaters",
+    "message": "missing parameters",
     "required": [{"user_id": "INTEGER", "heart_rate": "INTEGER", "blood_o2": "INTEGER", "temperature": "DOUBLE"}],
     "missing": [{"user_id": "INTEGER", "heart_rate": "INTEGER", "blood_o2": "INTEGER", "temperature": "DOUBLE"}],
     "submitted": [{}]
@@ -264,31 +261,30 @@ Now that we have added users and sensor data, let's take a look at the next **co
 # 2. `/get`
 **Fetch a *single* entry or *multiple* entries from a `table`**
 
-**Endpoints:**
-
+### Endpoints:
 | resource | description  |
 |:--|:--|
 | **`/get`** | returns a list of all existing tables in the database |
 | **`/get/usage`** | returns a message for how to use this function |
 | **`/get/{table_name}`** | returns all entries for the table: `{table_name}` |
-| **`/get/{table_name}/{param_name}/{param_value}`** | return all entries for table: `{table_name}` matching `/name/value` pairs (name=value) |
-| **`/get/{table_name}?param_name=param_value`**  | return all entries for table: `{table_name}` matching `name=value` pairs |
-| **`/get/{table_name}/filter/{filter_string}`**  | return entries matching `/name/value` pairs and `filter` by: `{filter_string}` |
-| **`/get/{table_name}?filter=filter_string`**  | return entries matching `name=value` pairs and `filter` by: `{filter_string}` |
+| **`/get/{table_name}/{param_name}/{param_value}`** | return entries matching parameters |
+| **`/get/{table_name}?param_name=param_value`**  | return entries matching parameters |
+| **`/get/{table_name}/filter/{filter_string}`**  | return entries matching `filter` by `{filter_string}` |
+| **`/get/{table_name}?filter=filter_string`**  | return entries matching `filter` by `{filter_string}` |
 
-**The Filter Parameter:**
-- `name=value` pairs are limited to `column` paramaters with an *exact match*! (ex: username=alice, user_id=8, etc.)
-- the **`{filter_string}`** supports **expressions** containing **comparrison and logical operators** as well ass **functions**
+### Parameters:
+- `name=value` pairs are limited to `column` parameters with an *exact match*! <br />
+  (ex: username=alice, user_id=8, etc.)
+- the **`{filter_string}`** supports **expressions** containing **comparison and logical operators** and **functions**
 - We will examine how to use the **`filter`** parameter in the examples ahead
 
-> Note: <br />
-> 
+Note:
 > The old functions `/getUser`, `/getUsers`, `/getSensorData`, and `/getAllSensorData` still work but are kept for backward compatibility. <br />
 > `/getUser` has migrated to: `/get/users` <br />
 > `/getUsers` has migrated to: `/get/users` <br />
 > `/getSensorData` has migrated to: `/get/oximeter` <br />
 > `/getAllSensorData` has migrated to: `/get/oximeter` <br />
-> It is recommened to update the existing *mp32* and *swift* code to follow the new format
+> It is recommended to update the existing *mp32* and *swift* code to follow the new format
 
 ## Workflow Example:
 * Let's query the **`users`** table to find the 2 users we created earlier
@@ -324,6 +320,11 @@ Response:
 
 We just want our 2 users **`alice`** and **`bob`**, let's try querying with different parameters
 
+Arguments:
+``` python
+username = alice
+```
+
 Request:
 ```ruby
 /get/users/username/alice
@@ -335,6 +336,11 @@ Response:
   "message": "1 user entry found",
   "data": {"user_id": 7, "username": "alice", "password": "df564e993decffa1a96454f7fa0dc48f0bf66c981f141aaf9b140f18c7f3aed90727ec05e4fcef23af66830dd6883b6b899414eff98aa2669443bc8d42470c9a", "create_time": "2022-04-05 03:25:57.163"}
 }
+```
+
+Arguments:
+``` python
+username = bob
 ```
 
 Request:
@@ -350,6 +356,11 @@ Response:
 }
 ```
 
+Arguments:
+``` python
+user_id = 7
+```
+
 Request:
 ```ruby
 /get/users/user_id/7
@@ -363,6 +374,10 @@ Response:
 }
 ```
 
+Arguments:
+``` python
+user_id = 8
+```
 
 Request:
 ```ruby
@@ -378,6 +393,11 @@ Response:
 ```
 
 #### Let's try out the **`filter`** parameter to get just the users: **`alice`** and **`bob`**
+
+Arguments:
+``` python
+filter = (user_id = 7 OR user_id = 8)
+```
 
 Request:
 ```ruby
@@ -395,6 +415,10 @@ Response:
 }
 ```
 
+Arguments: "values" wrapped with double quotations 
+``` python
+filter = (user_id = "7" OR user_id = "8")
+```
 
 Request:
 ```ruby
@@ -412,10 +436,14 @@ Response:
 }
 ```
 
+Arguments:
+``` python
+filter = (user_id > '6' AND user_id < "9")
+```
 
 Request:
 ```ruby
-/get/users?filter=(user_id > 6 AND user_id < 9)
+/get/users?filter=(user_id > '6' AND user_id < "9")
 ```
 
 Response:
@@ -429,6 +457,10 @@ Response:
 }
 ```
 
+Arguments:
+``` python
+filter = (username="bob" OR username="alice")
+```
 
 Request:
 ```ruby
@@ -446,29 +478,34 @@ Response:
 }
 ```
 
-##### Note on {filter_string}:
-* QUERY FORMAT : ?filter=(param_name > "param_value")
-* QUERY EXAMPLE: **`/get/users?filter=(user_id = "7" OR username="bob")`**
-* PATH FORMAT : /filter/(param_name="param_value" OR param_name="param_value")
-* PATH EXAMPLE: /get/users/filter/(username="bob" OR username="alice")
-* the keyword: **`filter`** indicates that the statement following the keyword is to be applied as the **`filter`**
-* the **`param_name`** must never be wrapped in quotations as it is treated as a **variable** referring to the **column_name**
-* the **`"param_value"`** is usually wrapped in **"single"** or **"double"** quotations, with the exception of **NUMBERS**.
+### Notes on {filter_string}:
+| Note | Comment |
+|:--|:--|
+| keyword | **`filter`** |
+| QUERY FORMAT | ?filter=(param_name > "param_value") |
+| QUERY EXAMPLE | **`/get/users?filter=(user_id = "7" OR username="bob")`** |
+| PATH FORMAT | /filter/(param_name="param_value" OR param_name="param_value") |
+| PATH EXAMPLE | /get/users/filter/(username="bob" OR username="alice") |
+* the **`param_name`** must never be wrapped in quotations as it is treated as a **variable**
+* the **`"param_value"`** is usually wrapped in **"single"** or **"double"** quotations.
   * **NUMBERS** do not have to be wrapped in quotations
-  * *However*:  It is recommended that you do wrap **NUMBERS** in quotations as to consistent with the format of
-                **not wrapping** **`param_names`** and **wrapping** **`"param_values"`**.
 * spaces are allowed within an *expression*
                 
 #### `/get` sensor data for `alice` and `bob`
 
 Oximeter data for just `alice`:
 
+Arguments:
+``` python
+user_id = 7
+```
+
 Request:
 ```ruby
 https://m2band.hopto.org/get/oximeter/user_id/7
 ```
 
-Response
+Response:
 ```json
 {
     "message": "found 6 oximeter entries",
@@ -485,12 +522,17 @@ Response
 
 Oximeter data for just `bob`:
 
+Arguments:
+``` python
+user_id = 8
+```
+
 Request:
 ```ruby
 https://m2band.hopto.org/get/oximeter/user_id/8
 ```
 
-Response
+Response:
 ```json
 {
     "message": "found 10 oximeter entries",
@@ -511,12 +553,17 @@ Response
 
 Oximeter data for users with (**`user_id`** BETWEEN "6" AND "9")
 
+Arguments:
+``` python
+filter = (user_id BETWEEN "6" AND "9")
+```
+
 Request:
 ```ruby
 https://m2band.hopto.org/get/oximeter/filter/(user_id BETWEEN "6" AND "9")
 ```
 
-Response
+Response:
 ```json
 {
     "message": "found 16 oximeter entries",
@@ -545,12 +592,17 @@ Response
 Now let's determine who may have been suspected for having a fever.
 Using this definition: *Anything above 100.4 F is considered a fever.*
 
+Arguments:
+``` python
+filter = (temperature > "100.4") GROUP BY user_id
+```
+
 Request:
 ```ruby
 /get/oximeter/filter/(temperature > "100.4") GROUP BY user_id
 ```
 
-Response
+Response:
 ```json
 {"message": "1 oximeter entry found", "data": {"entry_id": 53, "user_id": 8, "heart_rate": 133, "blood_o2": 95, "temperature": 101.7115308733577, "entry_time": "2022-04-05 12:16:54.651"}}
 ```
@@ -560,12 +612,17 @@ Only **`bob`** reached temperatures above `100.4 F`
 #### Test Case: MIN, MAX, Temperature Range?
 Let's get the range of temperatures from **MIN** to **MAX**
 
+Arguments:
+``` python
+filter = (user_id = "8") ORDER BY temperature
+```
+
 Request:
 ```ruby
 /get/oximeter/filter/(user_id = "8") ORDER BY temperature
 ```
 
-Response
+Response:
 ```json
 {
     "message": "found 10 oximeter entries",
@@ -586,12 +643,17 @@ Response
 
 Get **`temperature`** Range of fever
 
+Arguments:
+``` python
+filter = (temperature > "100.4") ORDER BY temperature
+```
+
 Request:
 ```ruby
 /get/oximeter/user_id/8/filter/(temperature > "100.4") ORDER BY temperature
 ```
 
-Response
+Response:
 ```json
 {
     "message": "found 6 oximeter entries",
@@ -609,24 +671,35 @@ Response
 
 Get entry with **MIN** **`temperature`** 
 
+Arguments:
+``` python
+filter = (temperature > "100.4") ORDER BY temperature LIMIT 1
+```
+
 Request:
 ```ruby
 /get/oximeter/user_id/8/filter/(temperature > "100.4") ORDER BY temperature LIMIT 1
 ```
 
-Response
+Response:
 ```json
 {"message": "1 oximeter entry found", "data": {"entry_id": 53, "user_id": 8, "heart_rate": 133, "blood_o2": 95, "temperature": 101.7115308733577, "entry_time": "2022-04-05 12:16:54.651"}}
 ```
 
 Get entry with **MAX** **`temperature`** 
 
+Arguments:
+``` python
+user_id = 8
+filter = (temperature > "100.4") ORDER BY temperature DESC
+```
+
 Request:
 ```ruby
 /get/oximeter/user_id/8/filter/(temperature > "100.4") ORDER BY temperature DESC
 ```
 
-Response
+Response:
 ```json
 {
     "message": "found 6 oximeter entries",
@@ -643,6 +716,12 @@ Response
 
 Get **MAX**
 
+Arguments:
+``` python
+user_id = 8
+filter = (temperature > "100.4") ORDER BY temperature DESC LIMIT 1
+```
+
 Request:
 ```ruby
 /get/oximeter/user_id/8/filter/(temperature > "100.4") ORDER BY temperature DESC LIMIT 1
@@ -657,31 +736,86 @@ Response
 # 3. `/edit`
 **Edit a single entry or multiple entries of a table**
 
-Request Formats:
-* **`/edit`** - returns a list of all existing tables in the database
-* **`/edit/usage`** - returns a message for how to use this function
-* **`/edit/{table_name}`** - returns all entries for the table: `{table_name}`
-* **`/edit/{table_name}/{param_name}/{param_value}/*/*`** - edit a single entry or multiple entries of the table `{table_name}` using path parameters of `/name/value` pairs
-* **`/edit/{table_name}?param_name=param_value&*=*`** - edit a single entry or multiple entries of the table `{table_name}` using query parameters of `name=value` pairs
-  * **Requires**: at least 1 parameter to **`edit`** and 1 paramter to query or filter by
-  * **Returns**: number of entries editted in the **`table`**
-* **`/edit/{table_name}/{param_name}/{param_value}/*/*/filter/{filter_string}`** -  `/name/value` pairs and `filter` by: `{filter_string}`
-* **`/edit/{table_name}?param_name=param_value&*=*&filter={filter_string}`** - return entries matching `name=value` pairs and `filter` by: `{filter_string}`
-**The Filter Parameter**
-- `name=value` pairs are limited to `column` paramaters with an *exact match*! (ex: username=alice, user_id=8, etc.)
-- the **`{filter_string}`** supports **expressions** containing **comparrison and logical operators** as well ass **functions**
-- We will examine how to use the **`filter`** parameter in the examples ahead
-> Note: The old functions `/editUser`, `/editUsers`, `/editSensorData`, and `/editAllSensorData` still work but are kept for backward compatibility.
-> `/editUser` has migrated to: `/edit/users`
-> `/editUsers` has migrated to: `/edit/users`
-> `/editSensorData` has migrated to: `/edit/oximeter`
-> `/editAllSensorData` has migrated to: `/edit/oximeter`
-> It is recommened to update the existing *mp32* and *swift* code to follow the new format
+### Endpoints:
+| Resource | Description  |
+|:--|:--|
+| **`/edit`** | returns a list of all existing tables in the database |
+| **`/edit/usage`** | returns a message for how to use this function |
+| **`/edit/{table_name}`** | DEBUG: returns the required parameters |
+| **`/edit/{table_name}/{param_name}/{param_value}`** | edit entries using path parameters |
+| **`/edit/{table_name}?param_name=param_value`**  | edit entries using query parameters |
+| **`/edit/{table_name}/filter/{filter_string}`**  | edit entries matching filter |
+| **`/edit/{table_name}?filter=filter_string`**  | edit entries matching filter  |
 
-**Workflow Example:**
-* Let's query the **`users`** table to find the 2 users we created earlier
-* Next, we will query the **`oximeter`** table to retrieve the sensor data for each user
-* Finally, we will examine the **`filter`** parameter and test out a few **test cases**
-  * Test Case: Determine which user possibly has a **fever**
-  * Test Case: What was the range of **`temperature`** for this user? **min**? **max**?
-  * Test Case: Filter users created after a *start date* but before an *end date*.
+### Requirements:
+| Parameters | Comment  |
+|:--|:--|
+| at least 1 edit parameter | any parameter not **`*_id`** or **`*_time`** |
+| at least 1 reference parameter | any **`*_id`** or **`*_time`** parameter or **`filter`** |
+
+Note:
+> The old functions `/editUser` and `/editSensorData` still work but are kept for backward compatibility.
+> `/editUser` has migrated to: `/edit/users`
+> `/editSensorData` has migrated to: `/edit/oximeter`
+> It is recommended to update the existing *mp32* and *swift* code to follow the new format
+
+## Workflow Example:
+* Let's edit bob's **`username`** from `bob` to `robert` 
+* Then append `@gmail.com` to the **`username`** for both `robert` and `alice`
+* Robert and Alice now want their **`username`** to have `@udel.edu`
+  * Let's replace any **`username`** containing `@gmail.com` with `@udel.edu`
+* Alice would like her **`temperature`** data to be in celsius
+  * Let's convert the **`temperature`** from **`farenheight`** to **`celsius`** 
+
+
+#### Edit bob's **`username`** from `bob` to `robert` 
+
+
+
+#### Appending `@gmail.com` to the **`username`** for both `robert` and `alice`
+
+
+
+#### Replacing all **`users`** with **`username`** containing `@gmail.com` to `@udel.edu`
+
+
+
+#### Converting the **`temperature`** from **`farenheight`** to **`celsius`** for `alice`
+
+
+
+# 4. `/delete`
+**Delete a single entry or multiple entries of a table**
+
+### Endpoints:
+| Resource | Description  |
+|:--|:--|
+| **`/delete`** | returns a list of all existing tables in the database |
+| **`/delete/usage`** | returns a message for how to use this function |
+| **`/delete/{table_name}`** | DEBUG: returns the required parameters |
+| **`/delete/{table_name}/{param_name}/{param_value}`** | delete entries using path parameters |
+| **`/delete/{table_name}?param_name=param_value`**  | delete entries using query parameters |
+| **`/delete/{table_name}/filter/{filter_string}`**  | delete entries matching filter |
+| **`/delete/{table_name}?filter=filter_string`**  | delete entries matching filter  |
+
+### Requirements:
+| Parameters | Comment  |
+|:--|:--|
+| at least 1 reference parameter | any **`*_id`** or **`*_time`** parameter or **`filter`** |
+
+Note:
+> The old functions `/deleteUser` and `/deleteSensorData` still work but are kept for backward compatibility.
+> `/deleteUser` has migrated to: `/delete/users`
+> `/deleteSensorData` has migrated to: `/delete/oximeter`
+> It is recommended to update the existing *mp32* and *swift* code to follow the new format
+
+## Workflow Example:
+* Robert wasn't too happy that we were able to detect that he had a fever
+  * Let's delete all entries for `Robert` with **`temperature`** in the fever range
+
+
+#### Deleting all entries for `Robert` with **`temperature`** in the fever range
+
+
+
+
