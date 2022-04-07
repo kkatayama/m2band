@@ -1234,7 +1234,53 @@ Response:
 The endpoint for deleting a **`table`** with a **`table_name`** is **`/deleteTable/{table_name}`**.
 
 ### Let's Delete the Table `steps`
+Request:
+```ruby
+/deleteTable/steps
+```
 
+Response:
+```json
+{'message': '1 table deleted!', 'table': 'steps'}
+```
+
+Verify the **`steps`**** table no longer exists
+
+Request:
+```ruby
+/deleteTable
+```
+
+Response:
+```json
+{
+    'message': 'active tables in the database',
+    'tables': [
+        {
+            'name': 'users',
+            'type': 'table',
+            'columns': [
+                {'name': 'user_id', 'type': 'INTEGER PRIMARY KEY'},
+                {'name': 'username', 'type': 'TEXT NOT NULL'},
+                {'name': 'password', 'type': 'TEXT NOT NULL'},
+                {'name': 'create_time', 'type': "DATETIME NOT NULL DEFAULT (strftime('%Y-%m-%d %H:%M:%f', 'now', 'localtime'))"}
+            ]
+        },
+        {
+            'name': 'oximeter',
+            'type': 'table',
+            'columns': [
+                {'name': 'entry_id', 'type': 'INTEGER PRIMARY KEY'},
+                {'name': 'user_id', 'type': 'INTEGER NOT NULL'},
+                {'name': 'heart_rate', 'type': 'INTEGER NOT NULL'},
+                {'name': 'blood_o2', 'type': 'INTEGER NOT NULL'},
+                {'name': 'temperature', 'type': 'DOUBLE NOT NULL'},
+                {'name': 'entry_time', 'type': "DATETIME NOT NULL DEFAULT (strftime('%Y-%m-%d %H:%M:%f', 'now', 'localtime'))"}
+            ]
+        }
+    ]
+}
+```
 
 # User Functions
 The examples listed below will cover the **2 user functions**.
