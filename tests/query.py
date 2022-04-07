@@ -59,7 +59,7 @@ def parseQuery(query):
 
     params, filters = parseUrlPaths(url_paths, query_params, list(query_params.keys()))
     arguments = "\n".join([f"{k} = {v}" for (k, v) in params.items()])
-    if filters:
+    if filters and not params.get('filter'):
         return f"{arguments}\nfilter = {filters}"
     return arguments
 

@@ -99,7 +99,8 @@ Note: <br />
 * Let's add 2 users to the **`users`** table: `alice` and `bob`
 * Then, add sensor data to the **`oximeter`** table for both users
 
-#### Adding `alice` to the **`users`** table
+
+### Investigating the Endpoint: `/add`
 The endpoint for adding a user to the **`users`** is **`/add/users`**.
 Making a request to the endpoint without providing **parameters** returns a `missing parameters` message:
 
@@ -135,6 +136,8 @@ Response:
 }
 ```
 
+
+### Adding `alice` to the **`users`** table
 To add the user `alice`, we need to provide the **username** and **password** parameters
 There are several ways to do this: using **url_parameters**, **query_parameters**, or a combination of both.
 
@@ -171,7 +174,7 @@ Response:
 }
 ```
 
-#### Adding `bob` to the **`users`** table
+### Adding `bob` to the **`users`** table
 Request:
 ```ruby
 /add/users/username/bob/password/bob
@@ -184,7 +187,7 @@ Response:
 }
 ```
 
-#### Adding sensor data for the user `alice` to the **`oximeter`** table
+### Adding sensor data for the user `alice` to the **`oximeter`** table
 When we added the user `alice` to the **`users`** table, we were provided with the **`user_id = 7`** 
 To get the required parameters for adding an `entry` to the **`oximeter`**, make a request without parameters:
 
@@ -295,6 +298,9 @@ Note:
   * Test Case: Filter users created after a *start date* but before an *end date*.
 
 
+### Investigating the Endpoint: `/get`
+The endpoint for getting users from the **`users`** table is **`/get/users`**.
+
 Examine the **`users`** table
 Request:
 ```ruby
@@ -392,7 +398,7 @@ Response:
 }
 ```
 
-#### Let's try out the **`filter`** parameter to get just the users: **`alice`** and **`bob`**
+### Let's try out the **`filter`** parameter to get just the users: **`alice`** and **`bob`**
 
 Arguments:
 ``` python
@@ -491,7 +497,7 @@ Response:
   * **NUMBERS** do not have to be wrapped in quotations
 * spaces are allowed within an *expression*
                 
-#### `/get` sensor data for `alice` and `bob`
+### `/get` sensor data for `alice` and `bob`
 
 Oximeter data for just `alice`:
 
@@ -588,7 +594,7 @@ Response:
 }
 ```
 
-#### Test Case: Fever?
+### Test Case: Fever?
 Now let's determine who may have been suspected for having a fever.
 Using this definition: *Anything above 100.4 F is considered a fever.*
 
@@ -604,12 +610,15 @@ Request:
 
 Response:
 ```json
-{"message": "1 oximeter entry found", "data": {"entry_id": 53, "user_id": 8, "heart_rate": 133, "blood_o2": 95, "temperature": 101.7115308733577, "entry_time": "2022-04-05 12:16:54.651"}}
+{
+    "message": "1 oximeter entry found",
+    "data": {"entry_id": 53, "user_id": 8, "heart_rate": 133, "blood_o2": 95, "temperature": 101.7115308733577, "entry_time": "2022-04-05 12:16:54.651"}
+}
 ```
 
 Only **`bob`** reached temperatures above `100.4 F`
 
-#### Test Case: MIN, MAX, Temperature Range?
+### Test Case: MIN, MAX, Temperature Range?
 Let's get the range of temperatures from **MIN** to **MAX**
 
 Arguments:
@@ -683,7 +692,10 @@ Request:
 
 Response:
 ```json
-{"message": "1 oximeter entry found", "data": {"entry_id": 53, "user_id": 8, "heart_rate": 133, "blood_o2": 95, "temperature": 101.7115308733577, "entry_time": "2022-04-05 12:16:54.651"}}
+{
+    "message": "1 oximeter entry found",
+    "data": {"entry_id": 53, "user_id": 8, "heart_rate": 133, "blood_o2": 95, "temperature": 101.7115308733577, "entry_time": "2022-04-05 12:16:54.651"}
+}
 ```
 
 Get entry with **MAX** **`temperature`** 
@@ -768,21 +780,243 @@ Note:
   * Let's convert the **`temperature`** from **`farenheight`** to **`celsius`** 
 
 
-#### Edit bob's **`username`** from `bob` to `robert` 
+### Investigating the Endpoint: `/edit`
+The endpoint to edit a user from the **`users`** is **`/edit/users`**.
+Making a request to the endpoint without providing **parameters** returns a `missing parameters` message:
 
+Request:
+```ruby
+/edit/users
+```
 
+Response:
+```json
+{
+    "message": "missing a parameter to edit",
+    "editable": [{"username": "TEXT", "password": "TEXT"}],
+    "submitted": [{}, {"filter": ""}]
+}
+```
 
-#### Appending `@gmail.com` to the **`username`** for both `robert` and `alice`
+Making a request with only an **editable_parameter** updates the `missing parameters` message:
 
+Arguments:
+```python
+username = bob
+```
 
+Request:
+```ruby
+/edit/users/username/bob
+```
 
-#### Replacing all **`users`** with **`username`** containing `@gmail.com` to `@udel.edu`
+Response:
+```json
+{
+    "message": "missing a query parameter",
+    "query_params": [{"user_id": "INTEGER", "create_time": "DATETIME", "filter": ""}],
+    "submitted": [{"username": "bob"}]
+}
+```
 
+Making a request with only a **query_parameter** also updates the `missing parameters` message:
 
+Arguments:
+```python
+user_id = 8
+```
 
-#### Converting the **`temperature`** from **`farenheight`** to **`celsius`** for `alice`
+Request:
+```ruby
+/edit/users?user_id=8
+```
 
+Response:
+```json
+{
+    "message": "missing a parameter to edit",
+    "editable": [{"username": "TEXT", "password": "TEXT"}],
+    "submitted": [{"user_id": "8"}, {"filter": ""}]
+}
 
+```
+
+### Edit bob's **`username`** from `bob` to `robert`
+Arguments:
+```python
+username = robert
+user_id = 8
+```
+
+Request:
+```ruby
+/edit/users/username/robert?user_id=8
+```
+
+Response:
+```json
+{
+    "message": "edited 1 user entry",
+    "submitted": [{"username": "robert", "user_id": "8"}]
+}
+```
+
+Check the user to verify the edit
+
+Arguments:
+```python
+user_id = 8
+```
+
+Request:
+```ruby
+/get/users?user_id=8
+```
+
+Response:
+```json
+{
+    "message": "1 user entry found",
+    "data": {
+        "user_id": 8,
+        "username": "robert",
+        "password": "8ca79597eb2bc1eebd93a1d595e921fcc64a2c00f175cc5dfa59a728122bc846f1bba08457795d539145508d99747a43049cee0c0f696c7d1b088131b45fa0d4",
+        "create_time": "2022-04-05 03:41:12.857"
+    }
+}
+```
+
+### Appending `@gmail.com` to the **`username`** for both `robert` and `alice`
+Arguments:
+```python
+username = username||"@gmail.com"
+filter = (user_id="7" OR user_id="8")
+```
+
+Request:
+```ruby
+/edit/users/username/username||"@gmail.com"?filter=(user_id="7" OR user_id="8")
+```
+
+Response:
+```json
+{
+    "message": "edited 2 user entries",
+    "submitted": [{
+        "filter": "(user_id=\"7\" OR user_id=\"8\")",
+        "username": "username||\"@gmail.com\""
+    }]
+}
+```
+
+Verify the edits
+
+Arguments:
+```python
+filter = (user_id="7" OR user_id="8")
+filter = (user_id="7" OR user_id="8")
+```
+
+Request:
+```ruby
+/get/users?filter=(user_id="7" OR user_id="8")
+```
+
+Response:
+```json
+{
+    "message": "found 2 user entries",
+    "data": [
+        {
+            "user_id": 7,
+            "username": 'alice@gmail.com',
+            "password": "df564e993decffa1a96454f7fa0dc48f0bf66c981f141aaf9b140f18c7f3aed90727ec05e4fcef23af66830dd6883b6b899414eff98aa2669443bc8d42470c9a",
+            "create_time": "2022-04-05 03:25:57.163"
+        },
+        {
+            "user_id": 8,
+            "username": 'robert@gmail.com',
+            "password": "8ca79597eb2bc1eebd93a1d595e921fcc64a2c00f175cc5dfa59a728122bc846f1bba08457795d539145508d99747a43049cee0c0f696c7d1b088131b45fa0d4",
+            "create_time": "2022-04-05 03:41:12.857"
+        }
+    ]
+}
+```
+
+### Replacing all **`users`** with **`username`** containing `@gmail.com` to `@udel.edu`
+Arguments:
+```python
+username = REPLACE(username, "@gmail.com", "@udel.edu")
+filter = (user_id="7" OR user_id="8")
+```
+
+Request:
+```ruby
+/edit/users/username/REPLACE(username, "@gmail.com", "@udel.edu")?filter=(user_id="7" OR user_id="8")
+```
+
+Response:
+```json
+{
+    "message": "edited 2 user entries",
+    "submitted": [{
+        "filter": "(user_id=\"7\" OR user_id=\"8\")",
+        "username": "REPLACE(username, \"@gmail.com\", \"@udel.edu\")"
+    }]
+}
+```
+
+Verify the edits
+
+### Converting the **`temperature`** from **`farenheight`** to **`celsius`** for `alice`
+Arguments:
+```python
+temperature = ((5.0/9.0)*(temperature-32.0))
+filter = (user_id="7")
+```
+
+Request:
+```ruby
+/edit/oximeter?temperature=((5.0/9.0)*(temperature-32.0))&filter=(user_id="7")
+```
+
+Response:
+```json
+{
+    "message": "edited 6 oximeter entries", 
+    "submitted": [{
+        "filter": "(user_id=\"7\")",
+        "temperature": "((5.0/9.0)*(temperature-32.0))"
+    }]
+}
+```
+
+Verify the edits
+
+Arguments:
+```python
+filter = (user_id="7")
+```
+
+Request:
+```ruby
+/get/oximeter?filter=(user_id="7")
+```
+
+Response:
+```json
+{
+    'message': 'found 6 oximeter entries',
+    'data': [
+        {'entry_id': 43, 'user_id': 7, 'heart_rate': 134, 'blood_o2': 97, 'temperature': 36.48286879954039, 'entry_time': '2022-04-05 12:06:01.397'},
+        {'entry_id': 44, 'user_id': 7, 'heart_rate': 129, 'blood_o2': 98, 'temperature': 36.36295123460418, 'entry_time': '2022-04-05 12:06:01.528'},
+        {'entry_id': 45, 'user_id': 7, 'heart_rate': 128, 'blood_o2': 100, 'temperature': 36.30975186413218, 'entry_time': '2022-04-05 12:06:01.740'},
+        {'entry_id': 46, 'user_id': 7, 'heart_rate': 134, 'blood_o2': 96, 'temperature': 36.13161890536411, 'entry_time': '2022-04-05 12:06:01.994'},
+        {'entry_id': 47, 'user_id': 7, 'heart_rate': 132, 'blood_o2': 96, 'temperature': 36.54783110302192, 'entry_time': '2022-04-05 12:06:02.469'},
+        {'entry_id': 48, 'user_id': 7, 'heart_rate': 130, 'blood_o2': 98, 'temperature': 36.257128704506115, 'entry_time': '2022-04-05 12:06:02.669'}
+    ]
+}
+```
 
 # 4. `/delete`
 **Delete a single entry or multiple entries of a table**
@@ -814,8 +1048,67 @@ Note:
   * Let's delete all entries for `Robert` with **`temperature`** in the fever range
 
 
-#### Deleting all entries for `Robert` with **`temperature`** in the fever range
+### Investigating the Endpoint: `/delete`
+The endpoint for deleting an entry from the **`oximeter`** table is **`/delete/oximeter`**.
+Making a request to the endpoint without providing **parameters** returns a `missing parameters` message:
 
+Request:
+```ruby
+/delete/oximeter
+```
 
+Response:
+```json
+{
+    "message": "missing a query param(s)",
+    "query_params": [
+        {"entry_id": "INTEGER", "user_id": "INTEGER", "heart_rate": "INTEGER", "blood_o2": "INTEGER", "temperature": "DOUBLE", "entry_time": "DATETIME", "filter": ""}
+    ],
+    "submitted": [{}]
+}
+```
 
+### Deleting all entries for `Robert` with **`temperature`** in the fever range
+Arguments:
+```python
+filter = (user_id = "8" AND temperature > "100.4")
+```
+
+Request:
+```ruby
+/delete/oximeter?filter=(user_id = "8" AND temperature > "100.4")
+```
+
+Response:
+```json
+{
+    "message": "6 oximeter entries deleted",
+    "submitted": [{"filter": "(user_id = \"8\" AND temperature > \"100.4\")"}]
+}
+```
+
+Verify the deletes
+
+Arguments:
+```python
+user_id = 8
+```
+
+Request:
+```ruby
+/get/oximeter/user_id/8
+```
+
+Response:
+```json
+{
+    "message": "found 4 oximeter entries",
+    "data": [
+        {"entry_id": 49, "user_id": 8, "heart_rate": 143, "blood_o2": 97, "temperature": 97.23579109761334, "entry_time": "2022-04-05 12:16:11.420"},
+        {"entry_id": 50, "user_id": 8, "heart_rate": 127, "blood_o2": 97, "temperature": 97.7532770488335, "entry_time": "2022-04-05 12:16:11.592"},
+        {"entry_id": 51, "user_id": 8, "heart_rate": 131, "blood_o2": 95, "temperature": 97.89202180155488, "entry_time": "2022-04-05 12:16:11.747"},
+        {"entry_id": 52, "user_id": 8, "heart_rate": 124, "blood_o2": 95, "temperature": 97.81020200542864, "entry_time": "2022-04-05 12:16:11.897"}
+    ]
+}
+```
 
