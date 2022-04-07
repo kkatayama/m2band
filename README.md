@@ -1132,29 +1132,108 @@ All endpoints support 4  *HTTP_METHODS*: **GET**, **POST**, **PUT**, **DELETE**
 ### Endpoints:
 | Resource | Description  |
 |:--|:--|
-| **`/add`**  | returns a list of all existing tables in the database |
-| **`/add/usage`**  | returns a message for how to use this function |
-| **`/add/{table_name}`**  | DEBUG: returns the required parameters |
-| **`/add/{table_name}/{param_name}/{param_value}`**  | add a single entry to the table using path parameters |
-| **`/add/{table_name}?param_name=param_value`**  | add a single entry to the table using query parameters |
+| **`/createTable`**  | returns a list of all existing tables in the database |
+| **`/createTable/usage`**  | returns a message for how to use this function |
+| **`/createTable/{table_name}`**  | DEBUG: returns the required parameters |
+| **`/createTable/{table_name}/{column_name}/{column_type}`**  | create a table with columns using path parameters |
+| **`/createTable/{table_name}?column_name=column_type`**  | create a table with columns using query parameters |
 
 ### Requirements:
-| Parameters | Comment  |
+| Parameters | Value  |
 |:--|:--|
-| `user_id` and all parameters not **`*_id`** or **`*_time`** | Exception: `user_id` is required for **`users`** table |
+| user_id | INTEGER |
+| {ref}_id | INTEGER |
+| {ref}_time | DATETIME |
+| column_name | lowercase with underscores where appropriate |
+| column_type | one of 'INTEGER', 'DOUBLE', 'TEXT', 'DATETIME' |
+| Exception | "{ref}_id" not required when creating "users" table |
 
 ## Workflow Example:
-* Let's add 2 users to the **`users`** table: `alice` and `bob`
-* Then, add sensor data to the **`oximeter`** table for both users
+* Let's create a table named **`steps`** with the columns **`["step_id", "user_id", "step_count", "latitude", "longitude", "step_time"]`**
 
 
-### Investigating the Endpoint: `/add`
-The endpoint for adding a user to the **`users`** is **`/add/users`**.
+### Investigating the Endpoint: `/createTable`
+The endpoint for creating a **`table`** with a **`table_name`** is **`/createTable/{table_name}`**.
 Making a request to the endpoint without providing **parameters** returns a `missing parameters` message:
 
+Request:
+```ruby
+/createTable/steps
+```
 
-Making a request with only 1 of the 2 **required_parameters** updates the `missing parameters` message:
+Response:
+```json
+{
+    'message': 'missing paramaters',
+    'required': [
+        {
+            'user_id': 'INTEGER',
+            '{ref}_id': 'INTEGER',
+            '{ref}_time': 'DATETIME',
+            'column_name': 'column_type',
+            'available_types': ['INTEGER', 'DOUBLE', 'TEXT', 'DATETIME']
+        }
+    ],
+    'available_types': ['INTEGER', 'DOUBLE', 'TEXT', 'DATETIME'],
+    'Exception': '"{ref}_id" not required when creating "users" table',
+    'submitted': []
+}
+```
 
+### Creating the Table `steps`
+Arguments:
+```python
+step_id = INTEGER
+user_id = INTEGER
+step_count = INTEGER
+latitude = DOUBLE
+longitude = DOUBLE
+step_time = DATETIME
+```
+
+Request:
+```ruby
+/createTable/steps/step_id/INTEGER/user_id/INTEGER/step_count/INTEGER/latitude/DOUBLE/longitude/DOUBLE/step_time/DATETIME
+```
+
+Response:
+```json
+{
+    'message': '1 table created',
+    'table': 'steps',
+    'columns': [
+        'step_id INTEGER PRIMARY KEY',
+        'user_id INTEGER NOT NULL',
+        'step_count INTEGER NOT NULL',
+        'latitude DOUBLE NOT NULL',
+        'longitude DOUBLE NOT NULL',
+        "step_time DATETIME NOT NULL DEFAULT (strftime('%Y-%m-%d %H:%M:%f', 'now', 'localtime'))"
+    ]
+}
+```
+
+# 2. `/deleteTable`
+**Delete `table`**
+
+### Endpoints:
+| Resource | Description |
+|:--|:--|
+| **`/deleteTable`**  | returns a list of all existing tables in the database |
+| **`/deleteTable/usage`**  | returns a message for how to use this function |
+| **`/deleteTable/{table_name}`**  | DEBUG: returns the required parameters |
+
+### Requirements:
+| Parameters | Description |
+|:--|:--|
+| table_name | the name of the **`table`** you wish to delete  |
+
+## Workflow Example:
+* Let's delete the table named **`steps`** 
+
+### Investigating the Endpoint: `/deleteTable`
+The endpoint for deleting a **`table`** with a **`table_name`** is **`/deleteTable/{table_name}`**.
+
+### Let's Delete the Table `steps`
 
 
 # User Functions
