@@ -508,7 +508,7 @@ user_id = 7
 
 Request:
 ```ruby
-https://m2band.hopto.org/get/oximeter/user_id/7
+/get/oximeter/user_id/7
 ```
 
 Response:
@@ -535,7 +535,7 @@ user_id = 8
 
 Request:
 ```ruby
-https://m2band.hopto.org/get/oximeter/user_id/8
+/get/oximeter/user_id/8
 ```
 
 Response:
@@ -566,7 +566,7 @@ filter = (user_id BETWEEN "6" AND "9")
 
 Request:
 ```ruby
-https://m2band.hopto.org/get/oximeter/filter/(user_id BETWEEN "6" AND "9")
+/get/oximeter/filter/(user_id BETWEEN "6" AND "9")
 ```
 
 Response:
