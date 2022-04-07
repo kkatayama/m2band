@@ -13,28 +13,81 @@ example usage:
     query.py '/get/users'
     query.py '/get/users' --url 'http://localhost:8080'
 """
-from rich import print
+# -- System Modules -- #
+from urllib.parse import urlparse, parse_qsl
+from pathlib import Path
 import argparse
 import requests
 import sys
+import re
+
+# -- for importing parent module
+sys.path.append(str(Path('.').absolute().parent))
+
+# -- Helper Modules -- #
+from db_functions import parseUrlPaths
+from rich import print
 
 
-def g(base_url, path):
+def parseQuery(query):
+    commands = [
+        "add",
+        "get",
+        "edit",
+        "delete",
+        "login",
+        "logout",
+        "createTable",
+        "deleteTable",
+    ]
+    regex = rf"""
+    /({'|'.join(commands)})/([a-z_]+) |  # catch /<cmd>/<table_name
+    /({'|'.join(commands)})                      # catch only /<cmd>
+    """
+    m = re.compile(regex, re.VERBOSE)
+    if not m.search(query):
+        return None
+
+    endpoint = "/" + "/".join([term for term in m.search(query).groups() if term])
+    query_trimmed = query.replace(endpoint, "")
+    url_paths = urlparse(query_trimmed).path.strip("/")
+    query_params = dict(parse_qsl(urlparse(query_trimmed).query))
+
+    # print(f'endpoint = "{endpoint}"')
+    # print(f'url_paths = "{url_paths}"')
+    # print(f'query_params = "{query_params}"')
+
+    params, filters = parseUrlPaths(url_paths, query_params, list(query_params.keys()))
+    arguments = "\n".join([f"{k} = {v}" for (k, v) in params.items()])
+    if filters:
+        return f"{arguments}\nfilter = {filters}"
+    return arguments
+
+def executeQuery(base_url, query):
     base_url = base_url.strip('/')
-    url = f'{base_url}{path}'
-    print(f"\n`{path}`")
-    print("\nRequest:")
-    print("```ruby")
-    print(path)
-    print("```")
-    print("")
+    url = f'{base_url}{query}'
+
+    arguments = parseQuery(query)
+    request_str = f"""
+Arguments:
+```python
+{arguments}
+```
+
+Request:
+```ruby
+{query}
+```"""
+    print(request_str)
 
     r = requests.get(url)
     res = r.json() if r.status_code == 200 else r.text
-    print("Response")
-    print("```json")
-    print(res)
-    print("```")
+    response_str = f"""
+Response:
+```json
+res
+```"""
+    print(response_str)
     # return res
 
 def main():
@@ -48,7 +101,7 @@ def main():
     ap.add_argument('-u', '--url', default="https://m2band.hopto.org", help='base url of web framework')
     args = ap.parse_args()
 
-    g(base_url=args.url, path=args.query)
+    executeQuery(base_url=args.url, query=args.query)
 
 if __name__ == '__main__':
     sys.exit(main())
