@@ -37,7 +37,7 @@ These functions represent the main endpoints of the framework and will handle th
 2. [**`/logout`**](#2-logout) - Logout a user ((no signed cookie or token enabled yet)
 
 #### Debugging Tip!
-To see all of the available `tables` along with the `column_names` and the `column_types`, make a request to the root path of any core function
+To see all of the available `tables` along with the `column_names` and the `column_types`, make a request to the root path of any core or admin function
 
 Request:
 ```ruby
@@ -1122,13 +1122,42 @@ Response:
 
 
 # Admin Functions
-The examples listed below will cover the **4 core functions** and the **2 admin functions**.
+The examples listed below will cover the **2 admin functions**.
 All examples shown are executed via a **GET** request and can be tested with any browser.
 All endpoints support 4  *HTTP_METHODS*: **GET**, **POST**, **PUT**, **DELETE**
+
+# 1. `/createTable`
+**Create a new `table`**
+
+### Endpoints:
+| Resource | Description  |
+|:--|:--|
+| **`/add`**  | returns a list of all existing tables in the database |
+| **`/add/usage`**  | returns a message for how to use this function |
+| **`/add/{table_name}`**  | DEBUG: returns the required parameters |
+| **`/add/{table_name}/{param_name}/{param_value}`**  | add a single entry to the table using path parameters |
+| **`/add/{table_name}?param_name=param_value`**  | add a single entry to the table using query parameters |
+
+### Requirements:
+| Parameters | Comment  |
+|:--|:--|
+| `user_id` and all parameters not **`*_id`** or **`*_time`** | Exception: `user_id` is required for **`users`** table |
+
+## Workflow Example:
+* Let's add 2 users to the **`users`** table: `alice` and `bob`
+* Then, add sensor data to the **`oximeter`** table for both users
+
+
+### Investigating the Endpoint: `/add`
+The endpoint for adding a user to the **`users`** is **`/add/users`**.
+Making a request to the endpoint without providing **parameters** returns a `missing parameters` message:
+
+
+Making a request with only 1 of the 2 **required_parameters** updates the `missing parameters` message:
 
 
 
 # User Functions
-The examples listed below will cover the **4 core functions** and the **2 admin functions**.
+The examples listed below will cover the **2 user functions**.
 All examples shown are executed via a **GET** request and can be tested with any browser.
 All endpoints support 4  *HTTP_METHODS*: **GET**, **POST**, **PUT**, **DELETE**
