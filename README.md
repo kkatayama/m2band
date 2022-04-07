@@ -4,14 +4,14 @@
 Framework is loosely modeled after CRUD: [C]reate [R]ead [U]pdate [D]elete
 
 **Features:**
- * *Admin Functions* - **`/createTable`** and **`/deleteTable`**
- * *User Functions* - **`/login`** and **`/logout`**
- * *Core Functions* - [**`/add`**](#1-add), [**`/get`**](#2-get), [**`/edit`**](#3-edit), [**`/delete`**](4-delete)
- * Query and URL path parameter support
- * Additional **filter** parameter - enables SQLite expressions containing operators 
- * In-place column editing with SQLite3 expression support
- * [**`/get`**](#2-get), [**`/edit`**](#3-edit), [**`/delete`**](4-delete) support single and multiple simultaneous table transactions
- * Changes made to the **m2band.db** database are now automatically updated to the GitHub repo in *real-time*
+* [*Core Functions*](#Core-Functions) - [**`/add`**](#1-add), [**`/get`**](#2-get), [**`/edit`**](#3-edit), [**`/delete`**](4-delete)
+* [*Admin Functions*](#Admin-Functions) - [**`/createTable`**](#1-createTable) and [**`/deleteTable`**](#2-deleteTable)
+* [*User Functions*](User-Functions) - [**`/login`**](#1-login) and [**`/logout`**](#2-logout)
+* Query and URL path parameter support
+* Additional **filter** parameter - enables SQLite expressions containing operators 
+* In-place column editing with SQLite3 expression support
+* [**`/get`**](#2-get), [**`/edit`**](#3-edit), [**`/delete`**](4-delete) support single and multiple simultaneous table transactions
+* Changes made to the **m2band.db** database are now automatically updated to the GitHub repo in *real-time*
 
 **Design Constrains:**
 * All  **`table_names`** and **`column_names`** are defined with **lowercase** letters
@@ -27,6 +27,14 @@ These functions represent the main endpoints of the framework and will handle th
 2. [**`/get`**](#2-get) - Fetch a *single* entry or *multiple* entries from a `table`
 3. [**`/edit`**](#3-edit) - Edit a *single* entry or *multiple* entries in a `table`
 4. [**`/delete`**](4-delete) - Delete a *single* entry or *multiple* entries from a `table`
+
+**2 Admin Functions**
+1. [**`/createTable`**](#1-createTable) - Create a new `table` 
+2. [**`/deleteTable`**](#2-deleteTable) - Delete an existing `table`
+
+**2 User Functions**
+1. [**`/login`**](#1-login) - Login a user (no signed cookie or token enabled yet)
+2. [**`/logout`**](#2-logout) - Logout a user ((no signed cookie or token enabled yet)
 
 #### Debugging Tip!
 To see all of the available `tables` along with the `column_names` and the `column_types`, make a request to the root path of any core function
@@ -67,7 +75,7 @@ Response:
 }
 ```
 
-# Usage
+# Core Functions
 The examples listed below will cover the **4 core functions** and the **2 admin functions**.
 All examples shown are executed via a **GET** request and can be tested with any browser.
 All endpoints support 4  *HTTP_METHODS*: **GET**, **POST**, **PUT**, **DELETE**
@@ -1112,3 +1120,15 @@ Response:
 }
 ```
 
+
+# Admin Functions
+The examples listed below will cover the **4 core functions** and the **2 admin functions**.
+All examples shown are executed via a **GET** request and can be tested with any browser.
+All endpoints support 4  *HTTP_METHODS*: **GET**, **POST**, **PUT**, **DELETE**
+
+
+
+# User Functions
+The examples listed below will cover the **4 core functions** and the **2 admin functions**.
+All examples shown are executed via a **GET** request and can be tested with any browser.
+All endpoints support 4  *HTTP_METHODS*: **GET**, **POST**, **PUT**, **DELETE**
