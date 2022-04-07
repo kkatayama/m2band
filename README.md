@@ -278,7 +278,7 @@ Now that we have added users and sensor data, let's take a look at the next **co
 - the **`{filter_string}`** supports **expressions** containing **comparison and logical operators** and **functions**
 - We will examine how to use the **`filter`** parameter in the examples ahead
 
-Note: <br />
+Note:
 > The old functions `/getUser`, `/getUsers`, `/getSensorData`, and `/getAllSensorData` still work but are kept for backward compatibility. <br />
 > `/getUser` has migrated to: `/get/users` <br />
 > `/getUsers` has migrated to: `/get/users` <br />
