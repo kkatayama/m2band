@@ -794,7 +794,7 @@ Response:
 {
     "message": "missing a parameter to edit",
     "editable": [{"username": "TEXT", "password": "TEXT"}],
-    "submitted": [{}, {"filter": ""}]
+    "submitted": [{}]
 }
 ```
 
