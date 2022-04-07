@@ -273,7 +273,7 @@ Now that we have added users and sensor data, let's take a look at the next **co
 | **`/get/{table_name}?filter=filter_string`**  | return entries matching `filter` by `{filter_string}` |
 
 ### Parameters:
-- `name=value` pairs are limited to `column` parameters with an *exact match*!
+- `name=value` pairs are limited to `column` parameters with an *exact match*! <br />
   (ex: username=alice, user_id=8, etc.)
 - the **`{filter_string}`** supports **expressions** containing **comparison and logical operators** and **functions**
 - We will examine how to use the **`filter`** parameter in the examples ahead
