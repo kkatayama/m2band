@@ -499,8 +499,7 @@ def mapUrlPaths(url_paths, req_items, table=""):
     url_params = dict(zip(keys, vals))
 
     # -- process params
-    req_params = {k:v for (k,v) in req_items.items()}
-    # params = url_params | req_params
+    req_params = {k.lower():v.upper() for (k,v) in req_items.items()}
     params = {**url_params, **req_params}
 
     # -- order and build columns for CREATE statement
