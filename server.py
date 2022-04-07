@@ -163,7 +163,8 @@ def edit(db, table_name="", url_paths=""):
     # -- at least 1 query parameter required
     print(f'params = {params}')
     print(f'filters = {filters}')
-    submitted = {'filter': filters} | params if filters else params
+    submitted = {**{"filter": filters}, **params} if filters else params
+    # submitted = {'filter': filters} | params if filters else params
     # submitted = {**{'filter': filters}, **params}
     # query_params = non_edit_columns + ["filter"]
     query_params = {**non_edit_columns, **{"filter": filters}}
