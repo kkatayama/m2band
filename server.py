@@ -289,13 +289,26 @@ def logout(db):
 @route("/createTable/<table_name>")
 @route("/createTable/<table_name>/<url_paths:path>", method=["GET", "POST", "PUT", "DELETE"])
 def createTable(db, table_name="", url_paths=""):
-    if table == 'usage':
+    required_columns = {"user_id": "INTEGER", "<ref>_id": "INTEGER",
+                        "column_name": "column_type", "<ref>_id": "DATETIME"}
+    if table_name == 'usage':
         return usage_create_table
-    if ((not table_name) or (not url_paths)):
+    if (not table_name):
         return clean({"message": "active tables in the database", "tables": getTables(db)})
+    if ((not url_paths) and (not request.params)):
+        res = {"message": "missing paramaters", "required": [required_columns],
+               "missing": [missing_params], "submitted": [params]}
+        return clean(res)
 
     # -- parse "params" and "url_paths" from HTTP request
     params, columns = mapUrlPaths(url_paths, request.params, table_name)
+    return {"params": params, "columns": columns}
+
+    # if not checkCreateTable(params, columns):
+    #     res = {"message": "missing paramaters", "required": [required_columns],
+    #            "missing": [missing_params], "submitted": [params]}
+    #     return clean(res)
+
 
     # -- CREATE TABLE <table>
     res = addTable(db, table=table_name, columns=columns)
