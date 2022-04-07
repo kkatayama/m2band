@@ -76,7 +76,7 @@ Response:
 ```
 
 # Core Functions
-The examples listed below will cover the **4 core functions** and the **2 admin functions**.
+The examples listed below will cover the **4 core functions**
 All examples shown are executed via a **GET** request and can be tested with any browser.
 All endpoints support 4  *HTTP_METHODS*: **GET**, **POST**, **PUT**, **DELETE**
 
