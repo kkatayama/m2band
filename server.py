@@ -154,10 +154,11 @@ def edit(db, table_name="", url_paths=""):
     # -- at least 1 edit parameter required
     # if not any(k in params.keys() for k in editable_columns):
     if not (editable_columns.keys() & params.keys()):
+        submitted = {**{"filter": filters}, **params} if filters else params
         # res = {"message": "missing a parameter to edit",
         #        "editable": extract(col_info, editable_columns), "submitted": [params]}
         res = {"message": "missing a parameter to edit", "editable": [editable_columns],
-               "submitted": [params] + [{'filter': filters}]}
+               "submitted": [submitted]}
         return clean(res)
 
     # -- at least 1 query parameter required

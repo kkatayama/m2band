@@ -929,13 +929,13 @@ Response:
     "data": [
         {
             "user_id": 7,
-            "username": 'alice@gmail.com',
+            "username": "alice@gmail.com",
             "password": "df564e993decffa1a96454f7fa0dc48f0bf66c981f141aaf9b140f18c7f3aed90727ec05e4fcef23af66830dd6883b6b899414eff98aa2669443bc8d42470c9a",
             "create_time": "2022-04-05 03:25:57.163"
         },
         {
             "user_id": 8,
-            "username": 'robert@gmail.com',
+            "username": "robert@gmail.com",
             "password": "8ca79597eb2bc1eebd93a1d595e921fcc64a2c00f175cc5dfa59a728122bc846f1bba08457795d539145508d99747a43049cee0c0f696c7d1b088131b45fa0d4",
             "create_time": "2022-04-05 03:41:12.857"
         }
@@ -1006,14 +1006,14 @@ Request:
 Response:
 ```json
 {
-    'message': 'found 6 oximeter entries',
-    'data': [
-        {'entry_id': 43, 'user_id': 7, 'heart_rate': 134, 'blood_o2': 97, 'temperature': 36.48286879954039, 'entry_time': '2022-04-05 12:06:01.397'},
-        {'entry_id': 44, 'user_id': 7, 'heart_rate': 129, 'blood_o2': 98, 'temperature': 36.36295123460418, 'entry_time': '2022-04-05 12:06:01.528'},
-        {'entry_id': 45, 'user_id': 7, 'heart_rate': 128, 'blood_o2': 100, 'temperature': 36.30975186413218, 'entry_time': '2022-04-05 12:06:01.740'},
-        {'entry_id': 46, 'user_id': 7, 'heart_rate': 134, 'blood_o2': 96, 'temperature': 36.13161890536411, 'entry_time': '2022-04-05 12:06:01.994'},
-        {'entry_id': 47, 'user_id': 7, 'heart_rate': 132, 'blood_o2': 96, 'temperature': 36.54783110302192, 'entry_time': '2022-04-05 12:06:02.469'},
-        {'entry_id': 48, 'user_id': 7, 'heart_rate': 130, 'blood_o2': 98, 'temperature': 36.257128704506115, 'entry_time': '2022-04-05 12:06:02.669'}
+    "message": "found 6 oximeter entries",
+    "data": [
+        {"entry_id": 43, "user_id": 7, "heart_rate": 134, "blood_o2": 97, "temperature": 36.48286879954039, "entry_time": "2022-04-05 12:06:01.397"},
+        {"entry_id": 44, "user_id": 7, "heart_rate": 129, "blood_o2": 98, "temperature": 36.36295123460418, "entry_time": "2022-04-05 12:06:01.528"},
+        {"entry_id": 45, "user_id": 7, "heart_rate": 128, "blood_o2": 100, "temperature": 36.30975186413218, "entry_time": "2022-04-05 12:06:01.740"},
+        {"entry_id": 46, "user_id": 7, "heart_rate": 134, "blood_o2": 96, "temperature": 36.13161890536411, "entry_time": "2022-04-05 12:06:01.994"},
+        {"entry_id": 47, "user_id": 7, "heart_rate": 132, "blood_o2": 96, "temperature": 36.54783110302192, "entry_time": "2022-04-05 12:06:02.469"},
+        {"entry_id": 48, "user_id": 7, "heart_rate": 130, "blood_o2": 98, "temperature": 36.257128704506115, "entry_time": "2022-04-05 12:06:02.669"}
     ]
 }
 ```
