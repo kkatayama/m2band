@@ -753,11 +753,69 @@ Response
 | at least 1 edit parameter | any parameter not **`*_id`** or **`*_time`** |
 | at least 1 reference parameter | any **`*_id`** or **`*_time`** parameter or **`filter`** |
 
-Note: <br />
+Note:
 > The old functions `/editUser` and `/editSensorData` still work but are kept for backward compatibility.
 > `/editUser` has migrated to: `/edit/users`
 > `/editSensorData` has migrated to: `/edit/oximeter`
 > It is recommended to update the existing *mp32* and *swift* code to follow the new format
 
-**Workflow Example:**
-* Let's edit bob's **`username`** from `bob` to `bobby` 
+## Workflow Example:
+* Let's edit bob's **`username`** from `bob` to `robert` 
+* Then append `@gmail.com` to the **`username`** for both `robert` and `alice`
+* Robert and Alice now want their **`username`** to have `@udel.edu`
+  * Let's replace any **`username`** containing `@gmail.com` with `@udel.edu`
+* Alice would like her **`temperature`** data to be in celsius
+  * Let's convert the **`temperature`** from **`farenheight`** to **`celsius`** 
+
+
+#### Edit bob's **`username`** from `bob` to `robert` 
+
+
+
+#### Appending `@gmail.com` to the **`username`** for both `robert` and `alice`
+
+
+
+#### Replacing all **`users`** with **`username`** containing `@gmail.com` to `@udel.edu`
+
+
+
+#### Converting the **`temperature`** from **`farenheight`** to **`celsius`** for `alice`
+
+
+
+# 4. `/delete`
+**Delete a single entry or multiple entries of a table**
+
+### Endpoints:
+| Resource | Description  |
+|:--|:--|
+| **`/delete`** | returns a list of all existing tables in the database |
+| **`/delete/usage`** | returns a message for how to use this function |
+| **`/delete/{table_name}`** | DEBUG: returns the required parameters |
+| **`/delete/{table_name}/{param_name}/{param_value}`** | delete entries using path parameters |
+| **`/delete/{table_name}?param_name=param_value`**  | delete entries using query parameters |
+| **`/delete/{table_name}/filter/{filter_string}`**  | delete entries matching filter |
+| **`/delete/{table_name}?filter=filter_string`**  | delete entries matching filter  |
+
+### Requirements:
+| Parameters | Comment  |
+|:--|:--|
+| at least 1 reference parameter | any **`*_id`** or **`*_time`** parameter or **`filter`** |
+
+Note:
+> The old functions `/deleteUser` and `/deleteSensorData` still work but are kept for backward compatibility.
+> `/deleteUser` has migrated to: `/delete/users`
+> `/deleteSensorData` has migrated to: `/delete/oximeter`
+> It is recommended to update the existing *mp32* and *swift* code to follow the new format
+
+## Workflow Example:
+* Robert wasn't too happy that we were able to detect that he had a fever
+  * Let's delete all entries for `Robert` with **`temperature`** in the fever range
+
+
+#### Deleting all entries for `Robert` with **`temperature`** in the fever range
+
+
+
+

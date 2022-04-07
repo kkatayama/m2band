@@ -26,7 +26,7 @@ sys.path.append(str(Path('.').absolute().parent))
 
 # -- Helper Modules -- #
 from db_functions import parseUrlPaths
-from rich import print
+from rich import print, print_json
 
 
 def parseQuery(query):
@@ -68,7 +68,10 @@ def executeQuery(base_url, query):
     url = f'{base_url}{query}'
 
     arguments = parseQuery(query)
-    request_str = f"""
+    r = requests.get(url)
+    res = r.json() if r.status_code == 200 else r.text
+
+    output = f"""
 Arguments:
 ```python
 {arguments}
@@ -77,18 +80,14 @@ Arguments:
 Request:
 ```ruby
 {query}
-```"""
-    print(request_str)
+```
 
-    r = requests.get(url)
-    res = r.json() if r.status_code == 200 else r.text
-    response_str = f"""
 Response:
-```json
-res
-```"""
-    print(response_str)
-    # return res
+```json"""
+    print(output)
+    print(res)
+    print('```')
+    return res
 
 def main():
     examples = '''example usage:
@@ -102,6 +101,7 @@ def main():
     args = ap.parse_args()
 
     executeQuery(base_url=args.url, query=args.query)
+    # print(out)
 
 if __name__ == '__main__':
     sys.exit(main())
