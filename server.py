@@ -232,10 +232,9 @@ def delete(db, table_name="", url_paths=""):
     print(f"params = {params}\nfilters = '{filters}'")
 
     # -- to prevent accidental deletion of everything, at least 1 parameter is required
-    # submitted = {'filter': filters} | params if filters else params
-    submitted = {{'filter': filters}, params} if filters else params
-    # query_params = all_columns + ["filter"]
+    submitted = {**{"filter": filters}, **params} if filters else params
     query_params = {**table["columns"], **{"filter": filters}}
+
     # if not any(k in submitted.keys() for k in query_params):
     if not (submitted.keys() & query_params.keys()):
         res = {"message": "missing a query param(s)", "query_params": [query_params], "submitted": [submitted]}
