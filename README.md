@@ -1151,7 +1151,6 @@ All endpoints support 4  *HTTP_METHODS*: **GET**, **POST**, **PUT**, **DELETE**
 ## Workflow Example:
 * Let's create a table named **`steps`** with the columns **`["step_id", "user_id", "step_count", "latitude", "longitude", "step_time"]`**
 
-
 ### Investigating the Endpoint: `/createTable`
 The endpoint for creating a **`table`** with a **`table_name`** is **`/createTable/{table_name}`**.
 Making a request to the endpoint without providing **parameters** returns a `missing parameters` message:
