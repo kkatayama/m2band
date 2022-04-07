@@ -7,11 +7,11 @@ Framework is loosely modeled after CRUD: [C]reate [R]ead [U]pdate [D]elete
  * *Admin Functions* - **`/createTable`** and **`/deleteTable`**
  * *User Functions* - **`/login`** and **`/logout`**
  * *Core Functions* - [**`/add`**](#1-add), [**`/get`**](#2-get), [**`/edit`**](#3-edit), [**`/delete`**](4-delete)
- * Query and URL path paramater support
+ * Query and URL path parameter support
  * Additional **filter** parameter - enables SQLite expressions containing operators 
  * In-place column editing with SQLite3 expression support
  * [**`/get`**](#2-get), [**`/edit`**](#3-edit), [**`/delete`**](4-delete) support single and multiple simultaneous table transactions
- * Changes made to the **m2band.db** database are now automatically updated to the github repo in *real-time*
+ * Changes made to the **m2band.db** database are now automatically updated to the GitHub repo in *real-time*
 
 **Design Constrains:**
 * All  **`table_names`** and **`column_names`** are defined with **lowercase** letters
@@ -93,7 +93,7 @@ Note: <br />
 > The old functions `/addUser` and `/addSensorData` still work but are kept for backward compatibility. <br />
 > `/addUser` has migrated to: `/add/users` <br />
 > `/addSensorData` has migrated to: `/add/oximeter` <br />
-> It is recommened to update the existing *mp32* and *swift* code to follow the new format
+> It is recommended to update the existing *mp32* and *swift* code to follow the new format
 
 ## Workflow Example:
 * Let's add 2 users to the **`users`** table: `alice` and `bob`
@@ -111,7 +111,7 @@ Request:
 Response:
 ```json
 {
-  "message": "missing paramaters", 
+  "message": "missing parameters", 
   "required": [{"username": "TEXT", "password": "TEXT"}], 
   "missing": [{"username": "TEXT", "password": "TEXT"}], 
   "submitted": [{}]
@@ -128,7 +128,7 @@ Request:
 Response:
 ```json
 {
-  "message": "missing paramaters",
+  "message": "missing parameters",
   "required": [{"username": "TEXT", "password": "TEXT"}],
   "missing": [{"password": "TEXT"}],
   "submitted": [{"username": "alice"}]
@@ -171,7 +171,7 @@ Response:
 }
 ```
 
-#### > Adding `bob` to the **`users`** table
+#### Adding `bob` to the **`users`** table
 Request:
 ```ruby
 /add/users/username/bob/password/bob
@@ -184,7 +184,7 @@ Response:
 }
 ```
 
-#### > Adding sensor data for the user `alice` to the **`oximeter`** table
+#### Adding sensor data for the user `alice` to the **`oximeter`** table
 When we added the user `alice` to the **`users`** table, we were provided with the **`user_id = 7`** 
 To get the required parameters for adding an `entry` to the **`oximeter`**, make a request without parameters:
 
@@ -196,7 +196,7 @@ Request:
 Response:
 ```json
 {
-    "message": "missing paramaters",
+    "message": "missing parameters",
     "required": [{"user_id": "INTEGER", "heart_rate": "INTEGER", "blood_o2": "INTEGER", "temperature": "DOUBLE"}],
     "missing": [{"user_id": "INTEGER", "heart_rate": "INTEGER", "blood_o2": "INTEGER", "temperature": "DOUBLE"}],
     "submitted": [{}]
@@ -273,9 +273,9 @@ Now that we have added users and sensor data, let's take a look at the next **co
 | **`/get/{table_name}?filter=filter_string`**  | return entries matching `filter` by `{filter_string}` |
 
 ### Parameters:
-- `name=value` pairs are limited to `column` paramaters with an *exact match*!
+- `name=value` pairs are limited to `column` parameters with an *exact match*!
   (ex: username=alice, user_id=8, etc.)
-- the **`{filter_string}`** supports **expressions** containing **comparrison and logical operators** and **functions**
+- the **`{filter_string}`** supports **expressions** containing **comparison and logical operators** and **functions**
 - We will examine how to use the **`filter`** parameter in the examples ahead
 
 Note: <br />
@@ -284,7 +284,7 @@ Note: <br />
 > `/getUsers` has migrated to: `/get/users` <br />
 > `/getSensorData` has migrated to: `/get/oximeter` <br />
 > `/getAllSensorData` has migrated to: `/get/oximeter` <br />
-> It is recommened to update the existing *mp32* and *swift* code to follow the new format
+> It is recommended to update the existing *mp32* and *swift* code to follow the new format
 
 ## Workflow Example:
 * Let's query the **`users`** table to find the 2 users we created earlier
@@ -392,11 +392,11 @@ Response:
 }
 ```
 
-#### > Let's try out the **`filter`** parameter to get just the users: **`alice`** and **`bob`**
+#### Let's try out the **`filter`** parameter to get just the users: **`alice`** and **`bob`**
 
 Arguments:
 ``` python
-`filter=(user_id = 7 OR user_id = 8)`
+filter = (user_id = 7 OR user_id = 8)
 ```
 
 Request:
@@ -491,7 +491,7 @@ Response:
   * **NUMBERS** do not have to be wrapped in quotations
 * spaces are allowed within an *expression*
                 
-#### > `/get` sensor data for `alice` and `bob`
+#### `/get` sensor data for `alice` and `bob`
 
 Oximeter data for just `alice`:
 
@@ -588,7 +588,7 @@ Response:
 }
 ```
 
-#### > Test Case: Fever?
+#### Test Case: Fever?
 Now let's determine who may have been suspected for having a fever.
 Using this definition: *Anything above 100.4 F is considered a fever.*
 
@@ -609,7 +609,7 @@ Response:
 
 Only **`bob`** reached temperatures above `100.4 F`
 
-#### > Test Case: MIN, MAX, Temperature Range?
+#### Test Case: MIN, MAX, Temperature Range?
 Let's get the range of temperatures from **MIN** to **MAX**
 
 Arguments:
@@ -751,20 +751,13 @@ Response
 | Parameters | Comment  |
 |:--|:--|
 | at least 1 edit parameter | any parameter not **`*_id`** or **`*_time`** |
-| at least 1 refernce parameter | any **`*_id`** or **`*_time`** parameter or **`filter`** |
+| at least 1 reference parameter | any **`*_id`** or **`*_time`** parameter or **`filter`** |
 
 Note: <br />
-> The old functions `/editUser`, `/editUsers`, `/editSensorData`, and `/editAllSensorData` still work but are kept for backward compatibility.
+> The old functions `/editUser` and `/editSensorData` still work but are kept for backward compatibility.
 > `/editUser` has migrated to: `/edit/users`
-> `/editUsers` has migrated to: `/edit/users`
 > `/editSensorData` has migrated to: `/edit/oximeter`
-> `/editAllSensorData` has migrated to: `/edit/oximeter`
-> It is recommened to update the existing *mp32* and *swift* code to follow the new format
+> It is recommended to update the existing *mp32* and *swift* code to follow the new format
 
 **Workflow Example:**
-* Let's query the **`users`** table to find the 2 users we created earlier
-* Next, we will query the **`oximeter`** table to retrieve the sensor data for each user
-* Finally, we will examine the **`filter`** parameter and test out a few **test cases**
-  * Test Case: Determine which user possibly has a **fever**
-  * Test Case: What was the range of **`temperature`** for this user? **min**? **max**?
-  * Test Case: Filter users created after a *start date* but before an *end date*.
+* Let's edit bob's **`username`** from `bob` to `bobby` 
