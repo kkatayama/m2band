@@ -26,7 +26,7 @@ These functions represent the main endpoints of the framework and will handle th
 1. [**`/add`**](#1-add) - Add a *single* entry to a `table`
 2. [**`/get`**](#2-get) - Fetch a *single* entry or *multiple* entries from a `table`
 3. [**`/edit`**](#3-edit) - Edit a *single* entry or *multiple* entries in a `table`
-4. [**`/delete`**](4-delete) - Delete a *single* entry or *multiple* entries from a `table`
+4. [**`/delete`**](#4-delete) - Delete a *single* entry or *multiple* entries from a `table`
 
 **2 Admin Functions**
 1. [**`/createTable`**](#1-createTable) - Create a new `table` 
@@ -104,9 +104,8 @@ Note: <br />
 > It is recommended to update the existing *mp32* and *swift* code to follow the new format
 
 ## Workflow Example:
-* Let's add 2 users to the **`users`** table: `alice` and `bob`
-* Then, add sensor data to the **`oximeter`** table for both users
-
+* [Let's add 2 users to the **`users`** table: `alice` and `bob`](#adding-alice-to-the-users-table)
+* [Then, add sensor data to the **`oximeter`** table for both users](#adding-sensor-data-for-the-user-alice-to-the-oximeter-table)
 
 ### Investigating the Endpoint: `/add`
 The endpoint for adding a user to the **`users`** is **`/add/users`**.
