@@ -522,12 +522,28 @@ def mapUrlPaths(url_paths, req_items, table=""):
     print(f'columns = {columns}')
     return params, columns
 
+def parseURI(url_paths):
+    r = re.compile(r"/", re.VERBOSE)
+    url_split = r.split(url_paths)
+
+    if (len(url_split) % 2) == 0:
+        p = map(str, url_split)
+        url_params = dict(zip(p, p))
+    else:
+        keys, values = ([] for i in range(2))
+        for i in range(0, len(url_split), 2):
+            if re.match(r"([a-z_]+)", url_split[i]):
+                keys.append(url_split[i])
+                values.append(url_split[i + 1])
+            else:
+                values[-1] = "/".join([values[-1], url_split[i]])
+        url_params = dict(zip(keys, values))
+
+    return url_params
 
 def parseUrlPaths(url_paths, req_items, columns):
     # -- parse "params" and "filters" from url paths
-    r = re.compile(r"/", re.VERBOSE)
-    p = map(str, r.split(url_paths))
-    url_params = dict(zip(p, p))
+    url_params = parseURI(url_paths)
 
     # -- process filters (pop from url_params if necessary)
     url_filters = url_params.pop("filter") if url_params.get("filter") else ""
