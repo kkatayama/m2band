@@ -977,6 +977,8 @@ Response:
 Verify the edits
 
 ### Converting the **`temperature`** from **`farenheight`** to **`celsius`** for `alice`
+> Note: parsing url paths now support fractions :)
+
 Arguments:
 ```python
 temperature = ((5.0/9.0)*(temperature-32.0))
@@ -985,13 +987,13 @@ filter = (user_id="7")
 
 Request:
 ```ruby
-/edit/oximeter?temperature=((5.0/9.0)*(temperature-32.0))&filter=(user_id="7")
+/edit/oximeter/temperature/(temperature-32.0)*(5.0/9.0)?filter=(user_id="7")
 ```
 
 Response:
 ```json
 {
-    "message": "edited 6 oximeter entries", 
+    "message": "edited 6 oximeter entries",
     "submitted": [{
         "filter": "(user_id=\"7\")",
         "temperature": "((5.0/9.0)*(temperature-32.0))"
@@ -1145,7 +1147,7 @@ All endpoints support 4  *HTTP_METHODS*: **GET**, **POST**, **PUT**, **DELETE**
 | {ref}_id | INTEGER |
 | {ref}_time | DATETIME |
 | column_name | lowercase with underscores where appropriate |
-| column_type | one of 'INTEGER', 'DOUBLE', 'TEXT', 'DATETIME' |
+| column_type | one of `INTEGER`, `DOUBLE`, `TEXT`, `DATETIME` |
 | Exception | "{ref}_id" not required when creating "users" table |
 
 ## Workflow Example:
@@ -1163,19 +1165,19 @@ Request:
 Response:
 ```json
 {
-    'message': 'missing paramaters',
-    'required': [
+    "message": "missing paramaters",
+    "required": [
         {
-            'user_id': 'INTEGER',
-            '{ref}_id': 'INTEGER',
-            '{ref}_time': 'DATETIME',
-            'column_name': 'column_type',
-            'available_types': ['INTEGER', 'DOUBLE', 'TEXT', 'DATETIME']
+            "user_id": "INTEGER",
+            "{ref}_id": "INTEGER",
+            "{ref}_time": "DATETIME",
+            "column_name": "column_type",
+            "available_types": ["INTEGER", "DOUBLE", "TEXT", "DATETIME"]
         }
     ],
-    'available_types': ['INTEGER', 'DOUBLE', 'TEXT', 'DATETIME'],
-    'Exception': '"{ref}_id" not required when creating "users" table',
-    'submitted': []
+    "available_types": ["INTEGER", "DOUBLE", "TEXT", "DATETIME"],
+    "Exception": ""{ref}_id" not required when creating "users" table",
+    "submitted": []
 }
 ```
 
@@ -1198,15 +1200,15 @@ Request:
 Response:
 ```json
 {
-    'message': '1 table created',
-    'table': 'steps',
-    'columns': [
-        'step_id INTEGER PRIMARY KEY',
-        'user_id INTEGER NOT NULL',
-        'step_count INTEGER NOT NULL',
-        'latitude DOUBLE NOT NULL',
-        'longitude DOUBLE NOT NULL',
-        "step_time DATETIME NOT NULL DEFAULT (strftime('%Y-%m-%d %H:%M:%f', 'now', 'localtime'))"
+    "message": "1 table created",
+    "table": "steps",
+    "columns": [
+        "step_id INTEGER PRIMARY KEY",
+        "user_id INTEGER NOT NULL",
+        "step_count INTEGER NOT NULL",
+        "latitude DOUBLE NOT NULL",
+        "longitude DOUBLE NOT NULL",
+        "step_time DATETIME NOT NULL DEFAULT (strftime("%Y-%m-%d %H:%M:%f", "now", "localtime"))"
     ]
 }
 ```
@@ -1240,7 +1242,7 @@ Request:
 
 Response:
 ```json
-{'message': '1 table deleted!', 'table': 'steps'}
+{"message": '1 table deleted!', "table": "steps"}
 ```
 
 Verify the **`steps`**** table no longer exists
@@ -1253,28 +1255,28 @@ Request:
 Response:
 ```json
 {
-    'message': 'active tables in the database',
-    'tables': [
+    "message": "active tables in the database",
+    "tables": [
         {
-            'name': 'users',
-            'type': 'table',
-            'columns': [
-                {'name': 'user_id', 'type': 'INTEGER PRIMARY KEY'},
-                {'name': 'username', 'type': 'TEXT NOT NULL'},
-                {'name': 'password', 'type': 'TEXT NOT NULL'},
-                {'name': 'create_time', 'type': "DATETIME NOT NULL DEFAULT (strftime('%Y-%m-%d %H:%M:%f', 'now', 'localtime'))"}
+            "name": "users",
+            "type": "table",
+            "columns": [
+                {"name": "user_id", "type": "INTEGER PRIMARY KEY"},
+                {"name": "username", "type": "TEXT NOT NULL"},
+                {"name": "password", "type": "TEXT NOT NULL"},
+                {"name": "create_time", "type": "DATETIME NOT NULL DEFAULT (strftime("%Y-%m-%d %H:%M:%f", "now", "localtime"))"}
             ]
         },
         {
-            'name': 'oximeter',
-            'type': 'table',
-            'columns': [
-                {'name': 'entry_id', 'type': 'INTEGER PRIMARY KEY'},
-                {'name': 'user_id', 'type': 'INTEGER NOT NULL'},
-                {'name': 'heart_rate', 'type': 'INTEGER NOT NULL'},
-                {'name': 'blood_o2', 'type': 'INTEGER NOT NULL'},
-                {'name': 'temperature', 'type': 'DOUBLE NOT NULL'},
-                {'name': 'entry_time', 'type': "DATETIME NOT NULL DEFAULT (strftime('%Y-%m-%d %H:%M:%f', 'now', 'localtime'))"}
+            "name": "oximeter",
+            "type": "table",
+            "columns": [
+                {"name": "entry_id", "type": "INTEGER PRIMARY KEY"},
+                {"name": "user_id", "type": "INTEGER NOT NULL"},
+                {"name": "heart_rate", "type": "INTEGER NOT NULL"},
+                {"name": "blood_o2", "type": "INTEGER NOT NULL"},
+                {"name": "temperature", "type": "DOUBLE NOT NULL"},
+                {"name": "entry_time", "type": "DATETIME NOT NULL DEFAULT (strftime("%Y-%m-%d %H:%M:%f", "now", "localtime"))"}
             ]
         }
     ]
