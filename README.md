@@ -1151,7 +1151,8 @@ All endpoints support 4  *HTTP_METHODS*: **GET**, **POST**, **PUT**, **DELETE**
 | Exception | "{ref}_id" not required when creating "users" table |
 
 ## Workflow Example:
-* Let's create a table named **`steps`** with the columns **`["step_id", "user_id", "step_count", "latitude", "longitude", "step_time"]`**
+* Let's create a table named **`steps`** <br /> 
+  with the columns **`["step_id", "user_id", "step_count", "latitude", "longitude", "step_time"]`**
 
 ### Investigating the Endpoint: `/createTable`
 The endpoint for creating a **`table`** with a **`table_name`** is **`/createTable/{table_name}`**.
@@ -1176,7 +1177,7 @@ Response:
         }
     ],
     "available_types": ["INTEGER", "DOUBLE", "TEXT", "DATETIME"],
-    "Exception": ""{ref}_id" not required when creating "users" table",
+    "Exception": "\"{ref}_id\" not required when creating \"users\" table",
     "submitted": []
 }
 ```
@@ -1208,7 +1209,7 @@ Response:
         "step_count INTEGER NOT NULL",
         "latitude DOUBLE NOT NULL",
         "longitude DOUBLE NOT NULL",
-        "step_time DATETIME NOT NULL DEFAULT (strftime("%Y-%m-%d %H:%M:%f", "now", "localtime"))"
+        "step_time DATETIME NOT NULL DEFAULT (strftime(\"%Y-%m-%d %H:%M:%f\", \"now\", \"localtime\"))"
     ]
 }
 ```
@@ -1242,7 +1243,7 @@ Request:
 
 Response:
 ```json
-{"message": '1 table deleted!', "table": "steps"}
+{"message": "1 table deleted!", "table": "steps"}
 ```
 
 Verify the **`steps`**** table no longer exists
@@ -1264,7 +1265,7 @@ Response:
                 {"name": "user_id", "type": "INTEGER PRIMARY KEY"},
                 {"name": "username", "type": "TEXT NOT NULL"},
                 {"name": "password", "type": "TEXT NOT NULL"},
-                {"name": "create_time", "type": "DATETIME NOT NULL DEFAULT (strftime("%Y-%m-%d %H:%M:%f", "now", "localtime"))"}
+                {"name": "create_time", "type": "DATETIME NOT NULL DEFAULT (strftime(\"%Y-%m-%d %H:%M:%f\", \"now\", \"localtime\"))"}
             ]
         },
         {
@@ -1276,7 +1277,7 @@ Response:
                 {"name": "heart_rate", "type": "INTEGER NOT NULL"},
                 {"name": "blood_o2", "type": "INTEGER NOT NULL"},
                 {"name": "temperature", "type": "DOUBLE NOT NULL"},
-                {"name": "entry_time", "type": "DATETIME NOT NULL DEFAULT (strftime("%Y-%m-%d %H:%M:%f", "now", "localtime"))"}
+                {"name": "entry_time", "type": "DATETIME NOT NULL DEFAULT (strftime(\"%Y-%m-%d %H:%M:%f\", \"now\", \"localtime\"))"}
             ]
         }
     ]
