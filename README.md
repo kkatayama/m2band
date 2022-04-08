@@ -301,9 +301,9 @@ Note:
 * Let's query the **`users`** table to find the 2 users we created earlier
 * Next, we will query the **`oximeter`** table to retrieve the sensor data for each user
 * Finally, we will examine the **`filter`** parameter and test out a few **test cases**
-  * Test Case: Determine which user possibly has a **fever**
-  * Test Case: What was the range of **`temperature`** for this user? **min**? **max**?
-  * Test Case: Filter users created after a *start date* but before an *end date*.
+  * [Test Case](#test-case-fever): Determine which user possibly has a **fever**
+  * [Test Case](#test-case-min-max-temperature-range): What was the range of **`temperature`** for this user? **min**? **max**?
+  * [Test Case](#test-case-filter-users-created-after-a-start-date-but-before-an-end-date): Filter users created after a *start date* but before an *end date*.
 
 
 ### Investigating the Endpoint: `/get`
@@ -770,25 +770,25 @@ Request:
 Response:
 ```json
 {
-    'message': 'found 3 user entries',
-    'data': [
+    "message": "found 3 user entries",
+    "data": [
         {
-            'user_id': 6,
-            'username': 'M2band',
-            'password': '30823caee74ca49fd5699c8de172b515f7a00ab04a04d0641107677af5f372c169746ccdf08b3ba1542c0626d73cb5ebcfec762016cab411e06596e4d2211b34',
-            'create_time': '2022-04-03 15:29:41.223'
+            "user_id": 6,
+            "username": "M2band",
+            "password": "30823caee74ca49fd5699c8de172b515f7a00ab04a04d0641107677af5f372c169746ccdf08b3ba1542c0626d73cb5ebcfec762016cab411e06596e4d2211b34",
+            "create_time": "2022-04-03 15:29:41.223"
         },
         {
-            'user_id': 7,
-            'username': 'alice@udel.edu',
-            'password': 'df564e993decffa1a96454f7fa0dc48f0bf66c981f141aaf9b140f18c7f3aed90727ec05e4fcef23af66830dd6883b6b899414eff98aa2669443bc8d42470c9a',
-            'create_time': '2022-04-05 03:25:57.163'
+            "user_id": 7,
+            "username": "alice@udel.edu",
+            "password": "df564e993decffa1a96454f7fa0dc48f0bf66c981f141aaf9b140f18c7f3aed90727ec05e4fcef23af66830dd6883b6b899414eff98aa2669443bc8d42470c9a",
+            "create_time": "2022-04-05 03:25:57.163"
         },
         {
-            'user_id': 8,
-            'username': 'robert@udel.edu',
-            'password': '8ca79597eb2bc1eebd93a1d595e921fcc64a2c00f175cc5dfa59a728122bc846f1bba08457795d539145508d99747a43049cee0c0f696c7d1b088131b45fa0d4',
-            'create_time': '2022-04-05 03:41:12.857'
+            "user_id": 8,
+            "username": "robert@udel.edu",
+            "password": "8ca79597eb2bc1eebd93a1d595e921fcc64a2c00f175cc5dfa59a728122bc846f1bba08457795d539145508d99747a43049cee0c0f696c7d1b088131b45fa0d4",
+            "create_time": "2022-04-05 03:41:12.857"
         }
     ]
 }
@@ -809,19 +809,19 @@ Request:
 Response:
 ```json
 {
-    'message': 'found 2 user entries',
-    'data': [
+    "message": "found 2 user entries",
+    "data": [
         {
-            'user_id': 6,
-            'username': 'M2band',
-            'password': '30823caee74ca49fd5699c8de172b515f7a00ab04a04d0641107677af5f372c169746ccdf08b3ba1542c0626d73cb5ebcfec762016cab411e06596e4d2211b34',
-            'create_time': '2022-04-03 15:29:41.223'
+            "user_id": 6,
+            "username": "M2band",
+            "password": "30823caee74ca49fd5699c8de172b515f7a00ab04a04d0641107677af5f372c169746ccdf08b3ba1542c0626d73cb5ebcfec762016cab411e06596e4d2211b34",
+            "create_time": "2022-04-03 15:29:41.223"
         },
         {
-            'user_id': 7,
-            'username': 'alice@udel.edu',
-            'password': 'df564e993decffa1a96454f7fa0dc48f0bf66c981f141aaf9b140f18c7f3aed90727ec05e4fcef23af66830dd6883b6b899414eff98aa2669443bc8d42470c9a',
-            'create_time': '2022-04-05 03:25:57.163'
+            "user_id": 7,
+            "username": "alice@udel.edu",
+            "password": "df564e993decffa1a96454f7fa0dc48f0bf66c981f141aaf9b140f18c7f3aed90727ec05e4fcef23af66830dd6883b6b899414eff98aa2669443bc8d42470c9a",
+            "create_time": "2022-04-05 03:25:57.163"
         }
     ]
 }
