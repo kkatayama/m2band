@@ -298,8 +298,8 @@ Note:
 > It is recommended to update the existing *mp32* and *swift* code to follow the new format
 
 ## Workflow Example:
-* Let's query the **`users`** table to find the 2 users we created earlier
-* Next, we will query the **`oximeter`** table to retrieve the sensor data for each user
+* [Let's query the **`users`** table to find the 2 users we created earlier](#lets-try-out-the-filter-parameter-to-get-just-the-users-alice-and-bob)
+* [Next, we will query the **`oximeter`** table to retrieve the sensor data for each user](#get-sensor-data-for-alice-and-bob)
 * Finally, we will examine the **`filter`** parameter and test out a few **test cases**
   * [Test Case](#test-case-fever): Determine which user possibly has a **fever**
   * [Test Case](#test-case-min-max-temperature-range): What was the range of **`temperature`** for this user? **min**? **max**?
@@ -854,12 +854,12 @@ Note:
 > It is recommended to update the existing *mp32* and *swift* code to follow the new format
 
 ## Workflow Example:
-* Let's edit bob's **`username`** from `bob` to `robert` 
-* Then append `@gmail.com` to the **`username`** for both `robert` and `alice`
+* [Let's edit bob's **`username`** from `bob` to `robert`](#get-sensor-data-for-alice-and-bob) 
+* [Then append `@gmail.com` to the **`username`** for both `robert` and `alice`](#appending-gmailcom-to-the-username-for-both-robert-and-alice)
 * Robert and Alice now want their **`username`** to have `@udel.edu`
-  * Let's replace any **`username`** containing `@gmail.com` with `@udel.edu`
+  * [Let's replace any **`username`** containing `@gmail.com` with `@udel.edu`](#replacing-all-users-with-username-containing-gmailcom-to-udeledu)
 * Alice would like her **`temperature`** data to be in celsius
-  * Let's convert the **`temperature`** from **`farenheight`** to **`celsius`** 
+  * [Let's convert the **`temperature`** from **`farenheight`** to **`celsius`**](#converting-the-temperature-from-farenheight-to-celsius-for-alice)
 
 
 ### Investigating the Endpoint: `/edit`
@@ -1129,7 +1129,7 @@ Note:
 
 ## Workflow Example:
 * Robert wasn't too happy that we were able to detect that he had a fever
-  * Let's delete all entries for `Robert` with **`temperature`** in the fever range
+  * [Let's delete all entries for `Robert` with **`temperature`** in the fever range](#deleting-all-entries-for-robert-with-temperature-in-the-fever-range)
 
 
 ### Investigating the Endpoint: `/delete`
