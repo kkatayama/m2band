@@ -529,7 +529,7 @@ def parseURI(url_paths):
     if (len(url_split) % 2) == 0:
         p = map(str, url_split)
         url_params = dict(zip(p, p))
-    else:
+    elif url_paths:
         keys, values = ([] for i in range(2))
         for i in range(0, len(url_split), 2):
             if re.match(r"([a-z_]+)", url_split[i]):
@@ -538,6 +538,8 @@ def parseURI(url_paths):
             else:
                 values[-1] = "/".join([values[-1], url_split[i]])
         url_params = dict(zip(keys, values))
+    else:
+        url_params = {}
 
     return url_params
 
