@@ -752,6 +752,80 @@ Response
 {"message": "1 oximeter entry found", "data": {"entry_id": 55, "user_id": 8, "heart_rate": 144, "blood_o2": 98, "temperature": 103.35133621760384, "entry_time": "2022-04-05 12:16:54.931"}}
 ```
 
+### Test Case: Filter users created after a start date but before an end date.
+
+Finding users created after `2022-04-02`
+> Note: If you only provide a date but do not specify a time, then time 00:00:00 is assumed.
+
+Arguments:
+```python
+filter = (create_time > "2022-04-03")
+```
+
+Request:
+```ruby
+/get/users?filter=(create_time > "2022-04-03")
+```
+
+Response:
+```json
+{
+    'message': 'found 3 user entries',
+    'data': [
+        {
+            'user_id': 6,
+            'username': 'M2band',
+            'password': '30823caee74ca49fd5699c8de172b515f7a00ab04a04d0641107677af5f372c169746ccdf08b3ba1542c0626d73cb5ebcfec762016cab411e06596e4d2211b34',
+            'create_time': '2022-04-03 15:29:41.223'
+        },
+        {
+            'user_id': 7,
+            'username': 'alice@udel.edu',
+            'password': 'df564e993decffa1a96454f7fa0dc48f0bf66c981f141aaf9b140f18c7f3aed90727ec05e4fcef23af66830dd6883b6b899414eff98aa2669443bc8d42470c9a',
+            'create_time': '2022-04-05 03:25:57.163'
+        },
+        {
+            'user_id': 8,
+            'username': 'robert@udel.edu',
+            'password': '8ca79597eb2bc1eebd93a1d595e921fcc64a2c00f175cc5dfa59a728122bc846f1bba08457795d539145508d99747a43049cee0c0f696c7d1b088131b45fa0d4',
+            'create_time': '2022-04-05 03:41:12.857'
+        }
+    ]
+}
+```
+
+Finding users created after `2022-04-03` and before `2022-04-05 03:40:00`
+
+Arguments:
+```python
+filter = (create_time > "2022-04-03" AND create_time < "2022-04-05 03:40:00")
+```
+
+Request:
+```ruby
+/get/users?filter=(create_time > "2022-04-03" AND create_time < "2022-04-05 03:40:00")
+```
+
+Response:
+```json
+{
+    'message': 'found 2 user entries',
+    'data': [
+        {
+            'user_id': 6,
+            'username': 'M2band',
+            'password': '30823caee74ca49fd5699c8de172b515f7a00ab04a04d0641107677af5f372c169746ccdf08b3ba1542c0626d73cb5ebcfec762016cab411e06596e4d2211b34',
+            'create_time': '2022-04-03 15:29:41.223'
+        },
+        {
+            'user_id': 7,
+            'username': 'alice@udel.edu',
+            'password': 'df564e993decffa1a96454f7fa0dc48f0bf66c981f141aaf9b140f18c7f3aed90727ec05e4fcef23af66830dd6883b6b899414eff98aa2669443bc8d42470c9a',
+            'create_time': '2022-04-05 03:25:57.163'
+        }
+    ]
+}
+```
 
 # 3. `/edit`
 **Edit a single entry or multiple entries of a table**
@@ -1155,7 +1229,7 @@ All endpoints support 4  *HTTP_METHODS*: **GET**, **POST**, **PUT**, **DELETE**
   with the columns **`["step_id", "user_id", "step_count", "latitude", "longitude", "step_time"]`**
 
 ### Investigating the Endpoint: `/createTable`
-The endpoint for creating a **`table`** with a **`table_name`** is **`/createTable/{table_name}`**.
+The endpoint for creating a **`table`** with a **`table_name`** is **`/createTable/{table_name}`**. <br />
 Making a request to the endpoint without providing **parameters** returns a `missing parameters` message:
 
 Request:
