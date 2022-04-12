@@ -95,7 +95,7 @@ All endpoints support 4  *HTTP_METHODS*: **GET**, **POST**, **PUT**, **DELETE**
 ### Requirements:
 | Parameters | Exception  |
 |:--|:--|
-| `user_id` and all columns not **`*_id`** or **`*_time`** | `user_id` **NOT ALLOWED** when adding to **`users`** table |
+| `user_id` and all params not **`*_id`** or **`*_time`** | `user_id` **DISALLOWED** when adding to **`users`** table |
 
 Note: <br />
 > The old functions `/addUser` and `/addSensorData` still work but are kept for backward compatibility. <br />
