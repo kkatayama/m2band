@@ -285,8 +285,8 @@ Now that we have added users and sensor data, let's take a look at the next **co
 | **`/get/{table_name}`** | returns all entries for the table: `{table_name}` |
 | **`/get/{table_name}/{param_name}/{param_value}`** | return entries matching parameters |
 | **`/get/{table_name}?param_name=param_value`**  | return entries matching parameters |
-| **`/get/{table_name}/filter/{filter_string}`**  | return entries matching `filter` by `{filter_string}` |
-| **`/get/{table_name}?filter=filter_string`**  | return entries matching `filter` by `{filter_string}` |
+| **`/get/{table_name}/filter/{query}`**  | return entries matching `filter` by `{query}` |
+| **`/get/{table_name}?filter=query`**  | return entries matching `filter` by `{query}` |
 
 ### Parameters:
 | Parameters | Comment  |
