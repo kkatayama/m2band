@@ -13,16 +13,15 @@ usage_add = {
             ],
             "returns": "message containing the required parameters to add an entry to the table: <table>"
         },
-        "/add/<table>/<param_name>/<param_value>/../..": {
+        "/add/<table>/<param_name>/<param_value>": {
             "url_paths": "you can assing columns to values using url_paths separated by '/'",
-            "example": "/add/users/username/user_01/password/user_01",
-            "result": "would add the user 'user_01' to the [users] table with the password 'user_01'",
+            "example": "/add/users/username/user_01/password/user_01"
         },
         "/add/<table>?param_name=param_value": {
             "params": "you can also assign columns to values using parameters",
             "example": "/add/users?username=user_01&password=user_01"
         },
-        "note": "all parameters excluding '_id' and '_time' are required",
+        "Required": "'user_id' and all parameters excluding '{ref}_id' and '{ref}_time'",
         "note": "all tables excluding 'users' table require 'user_id' parameter as well",
         "returns": "'user_id' for 'users' table, '<name>_id' for all others (ex: 'entry_id')",
     }

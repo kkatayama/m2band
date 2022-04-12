@@ -93,9 +93,9 @@ All endpoints support 4  *HTTP_METHODS*: **GET**, **POST**, **PUT**, **DELETE**
 | **`/add/{table_name}?param_name=param_value`**  | add a single entry to the table using query parameters |
 
 ### Requirements:
-| Parameters | Comment  |
+| Parameters | Exception  |
 |:--|:--|
-| `user_id` and all parameters not **`*_id`** or **`*_time`** | Exception: `user_id` is required for **`users`** table |
+| `user_id` and all parameters not **`*_id`** or **`*_time`** | `user_id` **NOT PERMITTED** when adding to **`users`** table |
 
 Note: <br />
 > The old functions `/addUser` and `/addSensorData` still work but are kept for backward compatibility. <br />
