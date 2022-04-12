@@ -295,6 +295,7 @@ Now that we have added users and sensor data, let's take a look at the next **co
 | /key/value | match is limited to 'column_name == column_value' |
 | ?key=value | match is limited to 'column_name == column_value' |
 | /filter/query | supports **expressions**, **operators**,  and **functions** | 
+| ?filter=query | supports **expressions**, **operators**,  and **functions** | 
 
 ### Response After Successful [`/get`](#2-get):
 | Variable | Comment |
