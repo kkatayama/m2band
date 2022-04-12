@@ -1391,7 +1391,7 @@ All examples shown are executed via a **GET** request and can be tested with any
 All endpoints support 4  *HTTP_METHODS*: **GET**, **POST**, **PUT**, **DELETE**
 
 # 1. `/login`
-**Login `table`**
+**Login `user`**
 
 ### Endpoints:
 | Resource | Description |
@@ -1461,3 +1461,10 @@ Response:
 }
 ```
 
+# 1. `/logout`
+**Login `user`**
+
+### Endpoints:
+| Resource | Description |
+|:--|:--|
+| **`/login`**  | |
