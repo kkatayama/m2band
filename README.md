@@ -1461,10 +1461,23 @@ Response:
 }
 ```
 
-# 1. `/logout`
-**Login `user`**
+# 2. `/logout`
+**Log out a `user`**
 
 ### Endpoints:
 | Resource | Description |
 |:--|:--|
-| **`/login`**  | |
+| **`/logout`**  | log out a user |
+
+### Example `/logout`
+Request:
+```ruby
+/logout
+```
+
+Response:
+```json
+{
+    'message': 'user logged out'
+}
+```

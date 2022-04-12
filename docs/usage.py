@@ -311,3 +311,14 @@ usage_login = {
         },
     },
 }
+
+usage_logout = {
+    "message": "usage info: /logout",
+    "description": "logout a user",
+    "end_points": {
+        "/logout": {
+            "returns": "message: 'user logged out'"
+        },
+    },
+
+}
