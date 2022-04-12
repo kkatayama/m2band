@@ -861,6 +861,12 @@ Response:
 | at least 1 edit parameter | any parameter not **`*_id`** or **`*_time`** |
 | at least 1 reference parameter | any **`*_id`** or **`*_time`** parameter or **`filter`** |
 
+### Response After Successful [`/edit`](#3-edit):
+| Variable | Comment |
+|:--|:--|
+| `message` | number of edits made |
+| `submitted[]` | the parameters that were submitted |
+
 Note:
 > The old functions `/editUser` and `/editSensorData` still work but are kept for backward compatibility.
 > `/editUser` has migrated to: `/edit/users`
