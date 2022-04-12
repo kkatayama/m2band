@@ -97,6 +97,12 @@ All endpoints support 4  *HTTP_METHODS*: **GET**, **POST**, **PUT**, **DELETE**
 |:--|:--|
 | `user_id` and all params not **`*_id`** or **`*_time`** | no `user_id` when adding to **`users`** table |
 
+### Returns:
+| Variable | Comment |
+|:--|:--|
+| `user_id` | when entry is added to **`users`** table |
+| `{ref}_id` | when entry is added to any other table |  
+
 Note: <br />
 > The old functions `/addUser` and `/addSensorData` still work but are kept for backward compatibility. <br />
 > `/addUser` has migrated to: `/add/users` <br />
