@@ -9,7 +9,7 @@ usage_add = {
         },
         "/add/usage": {
             "returns": "message: 'usage-info",
-        }
+        },
         "/add/<table_name>": {
             "returns": "message: 'missing parameters'",
         },
@@ -47,7 +47,7 @@ usage_get = {
         },
         "/get/usage": {
             "returns": "{'message': 'usage-info'}",
-        }
+        },
         "/get/<table_name>": {
             "returns": "returns all entries for the table: <table_name>",
         },
@@ -123,7 +123,7 @@ usage_edit = {
         },
         "/edit/usage": {
             "returns": "message: 'usage-info'",
-        }
+        },
         "/edit/<table_name>": {
             "returns": "message: 'missing a parameter'",
         },
@@ -187,7 +187,7 @@ usage_delete = {
         },
         "/delete/usage": {
             "returns": "{'message': 'usage-info'}",
-        }
+        },
         "/delete/<table_name>": {
             "returns": "message: 'missing a parameter'",
         },
