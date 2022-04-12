@@ -86,7 +86,7 @@ All endpoints support 4  *HTTP_METHODS*: **GET**, **POST**, **PUT**, **DELETE**
 ### Endpoints:
 | Resource | Description  |
 |:--|:--|
-| **`/add`**  | returns array[] of all tables in the database |
+| **`/add`**  | returns tables[] in the database |
 | **`/add/usage`**  | returns {"message": "usage info"} |
 | **`/add/{table_name}`**  | returns {'message': 'missing parameters'} |
 | **`/add/{table_name}/{param_name}/{param_value}`**  | add entry using path parameters |
