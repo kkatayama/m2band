@@ -289,10 +289,18 @@ Now that we have added users and sensor data, let's take a look at the next **co
 | **`/get/{table_name}?filter=filter_string`**  | return entries matching `filter` by `{filter_string}` |
 
 ### Parameters:
-- `name=value` pairs are limited to `column` parameters with an *exact match*! <br />
-  (ex: username=alice, user_id=8, etc.)
-- the **`{filter_string}`** supports **expressions** containing **comparison and logical operators** and **functions**
-- We will examine how to use the **`filter`** parameter in the examples ahead
+| Parameters | Comment  |
+|:--|:--|
+| *None* | submit no parameters (none required) |
+| /key/value | match is limited to 'column_name == column_value' |
+| ?key=value | match is limited to 'column_name == column_value' |
+| /filter/query | supports **expressions**, **operators**,  and **functions** | 
+
+### Response After Successful [`/get`](#2-get):
+| Variable | Comment |
+|:--|:--|
+| `data = {obj}` | a single object matching the parameters |
+| `data = [{obj}]` | an array of objects mathcing the parameters |
 
 Note:
 > The old functions `/getUser`, `/getUsers`, `/getSensorData`, and `/getAllSensorData` still work but are kept for backward compatibility. <br />
