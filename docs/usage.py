@@ -8,10 +8,10 @@ usage_add = {
             "returns": "returns all tables[] in the database",
         },
         "/add/usage": {
-            "returns": "{'message': 'usage-info'}",
+            "returns": "message: 'usage-info",
         }
         "/add/<table_name>": {
-            "returns": "message containing 'required parameters'",
+            "returns": "message: 'missing parameters'",
         },
         "/add/<table_name>/<param_name>/<param_value>": {
             "url_paths": "add entry: 'param_name=param_value'",
@@ -52,7 +52,7 @@ usage_get = {
             "returns": "returns all entries for the table: <table_name>",
         },
         "/get/<table_name>/<param_name>/<param_value>": {
-            "url_paths": "match entry: 'param_name=param_value'",
+            "url_paths": "match entries: 'param_name=param_value'",
             "example": "/get/users/username/bob",
             "response": {
                 "message": "1 user entry found",
@@ -60,10 +60,9 @@ usage_get = {
                     "user_id": 8, "username": "bob", "password": "8..4", "create_time": "2022-04-05 03:25:57.163"
                 },
             },
-},
         },
         "/get/<table_name>?param_name=param_value": {
-            "params": "match entry: 'param_name=param_value'",
+            "params": "match entries: 'param_name=param_value'",
             "example": "/get/users?user_id=8",
             "response": {
                 "message": "1 user entry found",
@@ -73,7 +72,7 @@ usage_get = {
             },
         },
         "/get/<table_name>/filter/query": {
-            "url_paths": "match entry: 'filter=[query]'",
+            "url_paths": "match entries: 'filter=[query]'",
             "example": "/get/oximeter/filter/(temperature > "100.4") GROUP BY user_id",
             "response": {
                 "message": "1 oximeter entry found",
@@ -83,7 +82,7 @@ usage_get = {
             },
         },
         "/get/<table_name>?filter=query": {
-            "params": "match entry: 'filter=[query]'",
+            "params": "match entries: 'filter=[query]'",
             "example": "/get/users?filter=(create_time > \"2022-04-03\")",
             "response": {
                 "message": "found 3 user entries",
@@ -95,34 +94,24 @@ usage_get = {
 
             },
         },
-        "Required": "",
-        "Exception": "",
+        "Options": {
+            "Parameters": {
+                "None": "submit no parameters (none required)",
+                "/key/value": "match is limited to 'column_name == column_value'",
+                "?key=value": "match is limited to 'column_name == column_value'",
+                "/filter/query": "supports expressions, operators, and functions",
+                "?filter=query": "supports expressions, operators, and functions",
+            }
+        },
         "Response": {
-            "": "",
-            "": "",
+            "data": {
+                "{object}": "a single object matching the parameters",
+                "[{object}]": "a single object matching the parameters"
+            }
         },
     },
 }
 
-usage_get = {
-    "message": "usage info",
-    "description": "fetch a single entry or multiple entries in a table",
-    "/get": "returns a list of existing tables",
-    "/get/<table>": "returns all rows in a table",
-    "method_1": "exclusively using url paths",
-    "/get/<table>/<param_name>/<param_value>/../..": "find rows matching [name='value', ...]",
-    "/get/<table>/filter/<filter_string>": "query rows with filter (create_time > '2022-03-30')",
-    "/get/<table>/<param_name>/<param_value>/../../filter/<filter_string>": "match and query filter",
-    "method_2": "exclusively using parameters",
-    "/get/<table>?param_name=param_value...": "query rows matching [name='value', ...]",
-    "/get/<table>?filter='filter_string'": " rows with filter (create_time > '2022-03-30')",
-    "/get/<table?param_name=param_value&..&filter='filter_string'": "match and query filter",
-    "method_3": "using both parameters and url paths",
-    "/get/<table>/<param_name>/<param_value>?filter='filter_string'": "match params and filter",
-    "/get/<table>/filter/<filter_string>?param_name=param_value": "filter and match params",
-    "returns (multiple)": "an array of json objects for multiple items: [{'user_id': '1', ...}]",
-    "returns (single)": "a single json object for 1 item: {'user_id': '4', ...}",
-}
 
 
 usage_edit = {
@@ -134,46 +123,46 @@ usage_edit = {
     "/edit/<table>/filter/<filter_string>": "query rows with filter (create_time > '2022-03-30')",
     "/edit/<table>/<column_name>/<column_value>/../filter/<filter_string>": "use query and filter"
 }
-usage_get = {
-    "message": "usage info: '/get'",
-    "description": "fetch entry/entries from a table: <table_name>",
+usage_edit = {
+    "message": "usage info: '/edit'",
+    "description": "edit entry/entries from a table: <table_name>",
     "endpoints": {
-        "/get": {
+        "/edit": {
             "returns": "return all tables[] in the database",
         },
-        "/get/usage": {
-            "returns": "{'message': 'usage-info'}",
+        "/edit/usage": {
+            "returns": "message: 'usage-info'",
         }
-        "/get/<table_name>": {
+        "/edit/<table_name>": {
             "returns": "",
         },
-        "/get/<table_name>/<param_name>/<param_value>": {
-            "url_paths": "match entry: 'param_name=param_value'",
-            "example": "/get/users/username/user_01",
+        "/edit/<table_name>/<param_name>/<param_value>": {
+            "url_paths": "edit entries: 'param_name=param_value'",
+            "example": "/edit/users/username/user_01",
             "response": {
                 "message": "",
                 "user_id": 8
             },
         },
-        "/get/<table_name>?param_name=param_value": {
-            "params": "match entry: 'param_name=param_value'",
-            "example": "/get/users?username=user_01",
+        "/edit/<table_name>?param_name=param_value": {
+            "params": "edit entries: 'param_name=param_value'",
+            "example": "/edit/users?username=user_01",
             "response": {
                 "message": "",
                 "user_id": 8
             },
         },
-        "/get/<table_name>/filter/query": {
-            "url_paths": "match entry: 'filter=[query]'",
-            "example": "/get/users/filter/",
+        "/edit/<table_name>/filter/query": {
+            "url_paths": "edit entries: 'filter=[query]'",
+            "example": "/edit/users/filter/",
             "response": {
                 "message": "",
                 "user_id": 8
             },
         },
-        "/get/<table_name>?filter=query": {
-            "params": "match entry: 'filter=[query]'",
-            "example": "/get/users?filter=",
+        "/edit/<table_name>?filter=query": {
+            "params": "edit entries: 'filter=[query]'",
+            "example": "/edit/users?filter=",
             "response": {
                 "message": "",
                 "user_id": 8
@@ -212,7 +201,7 @@ usage_get = {
             "returns": "",
         },
         "/get/<table_name>/<param_name>/<param_value>": {
-            "url_paths": "match entry: 'param_name=param_value'",
+            "url_paths": "match entries: 'param_name=param_value'",
             "example": "/get/users/username/user_01",
             "response": {
                 "message": "",
@@ -220,7 +209,7 @@ usage_get = {
             },
         },
         "/get/<table_name>?param_name=param_value": {
-            "params": "match entry: 'param_name=param_value'",
+            "params": "match entries: 'param_name=param_value'",
             "example": "/get/users?username=user_01",
             "response": {
                 "message": "",
@@ -228,7 +217,7 @@ usage_get = {
             },
         },
         "/get/<table_name>/filter/query": {
-            "url_paths": "match entry: 'filter=[query]'",
+            "url_paths": "match entries: 'filter=[query]'",
             "example": "/get/users/filter/",
             "response": {
                 "message": "",
@@ -236,7 +225,7 @@ usage_get = {
             },
         },
         "/get/<table_name>?filter=query": {
-            "params": "match entry: 'filter=[query]'",
+            "params": "match entries: 'filter=[query]'",
             "example": "/get/users?filter=",
             "response": {
                 "message": "",

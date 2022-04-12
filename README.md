@@ -87,12 +87,12 @@ All endpoints support 4  *HTTP_METHODS*: **GET**, **POST**, **PUT**, **DELETE**
 | Resource | Description  |
 |:--|:--|
 | **`/add`**  | returns all tables[] in the database |
-| **`/add/usage`**  | returns {"message": "usage info"} |
-| **`/add/{table_name}`**  | returns {'message': 'missing parameters'} |
+| **`/add/usage`**  | returns message: 'usage info' |
+| **`/add/{table_name}`**  | returns message: 'missing parameters' |
 | **`/add/{table_name}/{param_name}/{param_value}`**  | add entry: 'param_name=param_value' |
 | **`/add/{table_name}?param_name=param_value`**  | add entry: 'param_name=param_value' |
 
-### Requirements:
+### Requirements:x
 | Parameters | Exception  |
 |:--|:--|
 | `user_id` and all params not **`*_id`** or **`*_time`** | no `user_id` when adding to **`users`** table |
@@ -283,10 +283,10 @@ Now that we have added users and sensor data, let's take a look at the next **co
 | **`/get`** | returns all tables[] in the database |
 | **`/get/usage`** | returns a message for how to use this function |
 | **`/get/{table_name}`** | returns all entries for the table: `{table_name}` |
-| **`/get/{table_name}/{param_name}/{param_value}`** | return entries matching parameters |
-| **`/get/{table_name}?param_name=param_value`**  | return entries matching parameters |
-| **`/get/{table_name}/filter/{query}`**  | return entries matching `filter` by `{query}` |
-| **`/get/{table_name}?filter=query`**  | return entries matching `filter` by `{query}` |
+| **`/get/{table_name}/{param_name}/{param_value}`** | match entries: 'param_name=param_value' |
+| **`/get/{table_name}?param_name=param_value`**  | match entries: 'param_name=param_value' |
+| **`/get/{table_name}/filter/{query}`**  | match entries: 'filter=[query]' |
+| **`/get/{table_name}?filter=query`**  | match entries: 'filter=[query]' |
 
 ### Options:
 | Parameters | Comment  |
@@ -847,13 +847,13 @@ Response:
 ### Endpoints:
 | Resource | Description  |
 |:--|:--|
-| **`/edit`** | returns a list of all existing tables in the database |
-| **`/edit/usage`** | returns a message for how to use this function |
-| **`/edit/{table_name}`** | DEBUG: returns the required parameters |
-| **`/edit/{table_name}/{param_name}/{param_value}`** | edit entries using path parameters |
-| **`/edit/{table_name}?param_name=param_value`**  | edit entries using query parameters |
-| **`/edit/{table_name}/filter/{filter_string}`**  | edit entries matching filter |
-| **`/edit/{table_name}?filter=filter_string`**  | edit entries matching filter  |
+| **`/edit`** | returns all tables[] in the database |
+| **`/edit/usage`** | returns message: 'usage-info' |
+| **`/edit/{table_name}`** | returns message: 'missing a parameter' |
+| **`/edit/{table_name}/{param_name}/{param_value}`** | edit entries: 'param_name=param_value' |
+| **`/edit/{table_name}?param_name=param_value`**  | edit entries: 'param_name=param_value' |
+| **`/edit/{table_name}/filter/{filter_string}`**  | edit entries: filter=[query]' |
+| **`/edit/{table_name}?filter=filter_string`**  | edit entries: filter=[query]' |
 
 ### Requirements:
 | Parameters | Comment  |
