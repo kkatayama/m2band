@@ -86,7 +86,7 @@ All endpoints support 4  *HTTP_METHODS*: **GET**, **POST**, **PUT**, **DELETE**
 ### Endpoints:
 | Resource | Description  |
 |:--|:--|
-| **`/add`**  | returns tables[] in the database |
+| **`/add`**  | returns all tables[] in the database |
 | **`/add/usage`**  | returns {"message": "usage info"} |
 | **`/add/{table_name}`**  | returns {'message': 'missing parameters'} |
 | **`/add/{table_name}/{param_name}/{param_value}`**  | add entry using path parameters |
@@ -280,7 +280,7 @@ Now that we have added users and sensor data, let's take a look at the next **co
 ### Endpoints:
 | resource | description  |
 |:--|:--|
-| **`/get`** | returns a list of all existing tables in the database |
+| **`/get`** | returns all tables[] in the database |
 | **`/get/usage`** | returns a message for how to use this function |
 | **`/get/{table_name}`** | returns all entries for the table: `{table_name}` |
 | **`/get/{table_name}/{param_name}/{param_value}`** | return entries matching parameters |
