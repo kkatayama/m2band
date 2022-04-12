@@ -523,6 +523,7 @@ def mapUrlPaths(url_paths, req_items, table=""):
     return params, columns
 
 def parseURI(url_paths):
+    print(f'url_paths = {url_paths}')
     r = re.compile(r"/", re.VERBOSE)
     url_split = r.split(url_paths)
 

@@ -66,6 +66,7 @@ def parseQuery(query):
 def executeQuery(base_url, query):
     base_url = base_url.strip('/')
     url = f'{base_url}{query}'
+    print(f'url = "{url}"')
 
     arguments = parseQuery(query)
     r = requests.get(url)
