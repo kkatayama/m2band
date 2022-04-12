@@ -1417,9 +1417,47 @@ Request:
 
 Response:
 ```json
-{'message': 'missing parameters', 'required': [{'username': 'TEXT', 'password': 'TEXT'}], 'submitted': [{}]}
+{
+    "message": "missing parameters", 
+    "required": [{"username": "TEXT", "password": "TEXT"}], "submitted": [{}]
+}
 ```
 
+Arguments:
+```python
+username = alice
+```
+
+Request:
+```ruby
+/login/username/alice@udel.edu
+```
+
+Response:
+```json
+{
+    "message": "missing parameters",
+    "required": [{"username": "TEXT", "password": "TEXT"}],
+    "submitted": [{"username": "alice@udel.edu"}]
+}
+```
 
 ### Let's Login the user `alice`
+Arguments:
+```python
+username = alice@udel.edu
+password = alice
+```
+
+Request:
+```ruby
+/login/username/alice@udel.edu/password/alice
+```
+
+Response:
+```json
+{
+    "message": "user login success", "user_id": 7, "username": "alice@udel.edu"
+}
+```
 
