@@ -40,8 +40,12 @@ def parseQuery(query):
         "createTable",
         "deleteTable",
     ]
+    tables = [
+        "users",
+        "oximeter"
+    ]
     regex = rf"""
-    /({'|'.join(commands)})/([a-z_]+) |  # catch /<cmd>/<table_name
+    /({'|'.join(commands)})/(tables) |  # catch /<cmd>/<table_name
     /({'|'.join(commands)})                      # catch only /<cmd>
     """
     m = re.compile(regex, re.VERBOSE)
@@ -66,9 +70,8 @@ def parseQuery(query):
 def executeQuery(base_url, query):
     base_url = base_url.strip('/')
     url = f'{base_url}{query}'
-    print(f'url = "{url}"')
-
     arguments = parseQuery(query)
+
     r = requests.get(url)
     res = r.json() if r.status_code == 200 else r.text
 
@@ -98,7 +101,7 @@ def main():
 
     ap = argparse.ArgumentParser(epilog=examples, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument('query', help="api endpoint to query")
-    ap.add_argument('-u', '--url', default="https://m2band.hopto.org", help='base url of web framework')
+    ap.add_argument('-u', '--url', default="https://m2band.hopto.org/", help='base url of web framework')
     args = ap.parse_args()
 
     executeQuery(base_url=args.url, query=args.query)
