@@ -97,7 +97,7 @@ All endpoints support 4  *HTTP_METHODS*: **GET**, **POST**, **PUT**, **DELETE**
 |:--|:--|
 | `user_id` and all params not **`*_id`** or **`*_time`** | no `user_id` when adding to **`users`** table |
 
-### Returns:
+### Response After Successful [`/add`](#1-add):
 | Variable | Comment |
 |:--|:--|
 | `user_id` | when entry is added to **`users`** table |
