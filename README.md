@@ -86,11 +86,11 @@ All endpoints support 4  *HTTP_METHODS*: **GET**, **POST**, **PUT**, **DELETE**
 ### Endpoints:
 | Resource | Description  |
 |:--|:--|
-| **`/add`**  | returns a list of all existing tables in the database |
-| **`/add/usage`**  | returns a message for how to use this function |
-| **`/add/{table_name}`**  | DEBUG: returns the required parameters |
-| **`/add/{table_name}/{param_name}/{param_value}`**  | add entry to the table using path parameters |
-| **`/add/{table_name}?param_name=param_value`**  | add entry to the table using query parameters |
+| **`/add`**  | returns existing tables in the database |
+| **`/add/usage`**  | returns usage info |
+| **`/add/{table_name}`**  | returns the required parameters |
+| **`/add/{table_name}/{param_name}/{param_value}`**  | add entry using path parameters |
+| **`/add/{table_name}?param_name=param_value`**  | add entry using query parameters |
 
 ### Requirements:
 | Parameters | Exception  |
