@@ -5,27 +5,37 @@ usage_add = {
     "description": "add a single entry into a table: <table_name>",
     "endpoints": {
         "/add": {
-            "returns": "return tables[] in the database"
+            "returns": "return tables[] in the database",
         },
         "/add/usage": {
-            "returns": "{'message': 'usage-info'}"
+            "returns": "{'message': 'usage-info'}",
         }
         "/add/<table_name>": {
             "returns": "message containing 'required parameters'",
         },
         "/add/<table>/<param_name>/<param_value>": {
-            "url_paths": "you can assing columns to values using url_paths separated by '/'",
-            "example": "/add/users/username/user_01/password/user_01"
+            "url_paths": "assing columns to values separated by '/'",
+            "example": "/add/users/username/user_01/password/user_01",
+            "response": {
+                "message": "data added to {users}",
+                "user_id": 8
+            },
         },
         "/add/<table>?param_name=param_value": {
-            "params": "you can also assign columns to values using parameters",
-            "example": "/add/users?username=user_01&password=user_01"
+            "params": "assign columns to values using query",
+            "example": "/add/users?username=user_01&password=user_01",
+            "response": {
+                "message": "data added to {users}",
+                "user_id": 8
+            },
         },
-        "Required": "'user_id' and all parameters excluding '{ref}_id' and '{ref}_time'",
-        "Exception": "'user_id' is NOT PERMITTED when adding to the  users table"
-        "note": "all tables excluding 'users' table require 'user_id' parameter as well",
-        "returns": "'user_id' for 'users' table, '<name>_id' for all others (ex: 'entry_id')",
-    }
+        "Required": "'user_id' and all params not '*_id' and '*_time'",
+        "Exception": "no 'user_id' when adding to the users table",
+        "Response": {
+            "'user_id'": "when entry added to 'users' table",
+            "'<ref>_id'": "when entry added to any other table",
+        },
+    },
 }
 
 usage_get = {

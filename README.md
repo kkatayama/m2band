@@ -100,8 +100,8 @@ All endpoints support 4  *HTTP_METHODS*: **GET**, **POST**, **PUT**, **DELETE**
 ### Response After Successful [`/add`](#1-add):
 | Variable | Comment |
 |:--|:--|
-| `user_id` | when entry is added to **`users`** table |
-| `{ref}_id` | when entry is added to any other table |  
+| `user_id` | when entry added to **`users`** table |
+| `{ref}_id` | when entry added to any other table |  
 
 Note: <br />
 > The old functions `/addUser` and `/addSensorData` still work but are kept for backward compatibility. <br />
