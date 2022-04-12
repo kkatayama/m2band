@@ -186,7 +186,7 @@ usage_delete = {
             "returns": "return all tables[] in the database",
         },
         "/delete/usage": {
-            "returns": "{'message': 'usage-info'}",
+            "returns": "message: 'usage-info'",
         },
         "/delete/<table_name>": {
             "returns": "message: 'missing a parameter'",
@@ -242,18 +242,23 @@ usage_delete_table = {
     "description": "delete a table from the database",
     "end_points": {
         "/deleteTable": {
-            "returns": "a list of all tables in the database"
+            "returns": "return all tables[] in the database"
+        },
+        "/deleteTable/usage": {
+            "returns": "message: 'usage-info'",
         },
         "/deleteTable/<table_name>": {
-            "url_paths": [{
-                "<table_name>": "the name of the table you want to delete"
-            }],
-            "returns": [{
-                "json response": "confirmation message of table deleted"
-            }],
-            "notes": [{
-                "/deleteTable/users": "you define the table_name by placing it in the '/url_path'"
-            }],
+            "action": "delete the table: <table_name>",
+            "example": "/deleteTable/steps",
+            "response": {
+                "message": "1 table deleted!",
+                "table": "steps"
+            }
+        },
+        "Required": "<table_name>",
+        "Response": {
+            "message": "number of deletes made",
+            "table": "the name of the table that was deleted",
         },
     },
 }
@@ -263,18 +268,60 @@ usage_create_table = {
     "description": "create a table and insert it into the database",
     "end_points": {
         "/createTable": {
-            "returns": "a list of all tables in the database"
+            "returns": "return all tables[] in the database"
+        },
+        "/createTable/usage": {
+            "returns": "message: 'usage-info'",
         },
         "/createTable/<table_name>": {
-            "url_paths": [{
-                "<table_name>": "the name of the table you want to create"
-            }],
-            "returns": [{
-                "json response": "confirmation message of table created"
-            }],
-            "notes": [{
-                "/createTable/users": "you define the table_name by placing it in the '/url_path'"
-            }],
+            "returns": "message: 'missing parameters'",
+        },
+        "/createTable/<table_name>/<column_name>/<column_type>": {
+            "url_paths": "create columns: 'param_name=param_'",
+            "example": "/createTable/steps/step_id/INTEGER/user_id/INTEGER/step_count/INTEGER/latitude/DOUBLE/longitude/DOUBLE/step_time/DATETIME",
+            "response": {
+                "message": "1 table created",
+                "table": "steps",
+                "columns": [
+                    "step_id INTEGER PRIMARY KEY",
+                    "user_id INTEGER NOT NULL",
+                    "step_count INTEGER NOT NULL",
+                    "latitude DOUBLE NOT NULL",
+                    "longitude DOUBLE NOT NULL",
+                    "step_time DATETIME NOT NULL DEFAULT (strftime(\"%Y-%m-%d %H:%M:%f\", \"now\", \"localtime\"))"
+                ]
+            },
+        },
+        "/createTable/<table_name>?column_name=column_type": {
+            "params": "create columns: 'param_name=param_value'",
+            "example": "/createTable/steps?step_id=INTEGER&user_id=INTEGER&step_count=INTEGER&latitude=DOUBLE&longitude=DOUBLE&step_time=DATETIME",
+            "response": {
+                "message": "1 table created",
+                "table": "steps",
+                "columns": [
+                    "step_id INTEGER PRIMARY KEY",
+                    "user_id INTEGER NOT NULL",
+                    "step_count INTEGER NOT NULL",
+                    "latitude DOUBLE NOT NULL",
+                    "longitude DOUBLE NOT NULL",
+                    "step_time DATETIME NOT NULL DEFAULT (strftime(\"%Y-%m-%d %H:%M:%f\", \"now\", \"localtime\"))"
+                ]
+            },
+        },
+        "Required": {
+            "Parameters": {
+                "user_id": "INTEGER",
+                "{ref}_id": "INTEGER",
+                "{ref}_time": "DATETIME",
+                "column_name": "lowercase with underscores where appropriate",
+                "column_type": "one of 'INTEGER', 'DOUBLE', 'TEXT', 'DATETIME'",
+            }
+        },
+        "Exception": "'{ref}_id' not required when creating 'users' table",
+        "Response": {
+            "message": "number of tables created",
+            "table": "the table name",
+            "columns[]": "array of columns with their type"
         },
     },
 }
