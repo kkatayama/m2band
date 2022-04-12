@@ -23,9 +23,18 @@ def strip_path():
 # -- index - response: available commands
 @route("/", method=["GET", "POST", "PUT", "DELETE"])
 def index():
-    # print(inspect(app, all=True))
-    with open('docs/all_commands.json') as f:
-        res = json.load(f)
+    all_commands = {
+        "message": "available commands",
+        "Core_Functions": {
+            "/add": usage_add, "/get": usage_get, "/edit": usage_edit, "/delete": usage_delete,
+        },
+        "Admin_Functions": {
+            "/createTable": usage_create_table, "/deleteTable": usage_delete_table,
+        },
+        "User_Functions": {
+            "/login": usage_login, "/logout": usage_logout,
+        },
+    }
     return clean(res)
 
 ###############################################################################
