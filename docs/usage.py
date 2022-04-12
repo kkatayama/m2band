@@ -73,7 +73,7 @@ usage_get = {
         },
         "/get/<table_name>/filter/query": {
             "url_paths": "match entries: 'filter=[query]'",
-            "example": "/get/oximeter/filter/(temperature > "100.4") GROUP BY user_id",
+            "example": "/get/oximeter/filter/(temperature > '100.4') GROUP BY user_id",
             "response": {
                 "message": "1 oximeter entry found",
                 "data": {
