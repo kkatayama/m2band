@@ -288,7 +288,7 @@ Now that we have added users and sensor data, let's take a look at the next **co
 | **`/get/{table_name}/filter/{query}`**  | return entries matching `filter` by `{query}` |
 | **`/get/{table_name}?filter=query`**  | return entries matching `filter` by `{query}` |
 
-### Parameters:
+### Options:
 | Parameters | Comment  |
 |:--|:--|
 | *None* | submit no parameters (none required) |
