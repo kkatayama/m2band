@@ -23,7 +23,7 @@ def strip_path():
 # -- index - response: available commands
 @route("/", method=["GET", "POST", "PUT", "DELETE"])
 def index():
-    all_commands = {
+    res = {
         "message": "available commands",
         "Core_Functions": {
             "/add": usage_add, "/get": usage_get, "/edit": usage_edit, "/delete": usage_delete,
