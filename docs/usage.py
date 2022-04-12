@@ -115,15 +115,6 @@ usage_get = {
 
 
 usage_edit = {
-    "message": "usage info",
-    "description": "edit a single entry or multiple entries in a table",
-    "/edit": "returns a list of existing tables",
-    "/edit/<table>": "returns all rows in a table",
-    "/edit/<table>/<column_name>/<column_value>/../..": "query rows matching [name='value', ...]",
-    "/edit/<table>/filter/<filter_string>": "query rows with filter (create_time > '2022-03-30')",
-    "/edit/<table>/<column_name>/<column_value>/../filter/<filter_string>": "use query and filter"
-}
-usage_edit = {
     "message": "usage info: '/edit'",
     "description": "edit entry/entries from a table: <table_name>",
     "endpoints": {
@@ -134,123 +125,126 @@ usage_edit = {
             "returns": "message: 'usage-info'",
         }
         "/edit/<table_name>": {
-            "returns": "",
+            "returns": "message: 'missing a parameter'",
         },
         "/edit/<table_name>/<param_name>/<param_value>": {
             "url_paths": "edit entries: 'param_name=param_value'",
-            "example": "/edit/users/username/user_01",
+            "example": "/edit/users/username/robert?user_id=8",
             "response": {
-                "message": "",
-                "user_id": 8
+                "message": "edited 1 user entry",
+                "submitted": [{"username": "robert", "user_id": "8"}]
             },
         },
         "/edit/<table_name>?param_name=param_value": {
             "params": "edit entries: 'param_name=param_value'",
-            "example": "/edit/users?username=user_01",
+            "example": "/edit/users/username/robert?user_id=8",
             "response": {
-                "message": "",
-                "user_id": 8
+                "message": "edited 1 user entry",
+                "submitted": [{"username": "robert", "user_id": "8"}]
             },
         },
         "/edit/<table_name>/filter/query": {
             "url_paths": "edit entries: 'filter=[query]'",
-            "example": "/edit/users/filter/",
+            "example": "/edit/oximeter/temperature/(temperature-32.0)*(5.0/9.0)?filter=(user_id='7')",
             "response": {
-                "message": "",
-                "user_id": 8
+                "message": "edited 6 oximeter entries",
+                "submitted": [{
+                    "filter": "(user_id='7')",
+                    "temperature": "((5.0/9.0)*(temperature-32.0))"
+                }]
             },
         },
         "/edit/<table_name>?filter=query": {
             "params": "edit entries: 'filter=[query]'",
-            "example": "/edit/users?filter=",
+            "example": "/edit/oximeter/temperature/(temperature-32.0)*(5.0/9.0)?filter=(user_id='7')",
             "response": {
-                "message": "",
-                "user_id": 8
+                "message": "edited 6 oximeter entries",
+                "submitted": [{
+                    "filter": "(user_id='7')",
+                    "temperature": "((5.0/9.0)*(temperature-32.0))"
+                }]
             },
         },
-        "Required": "",
-        "Exception": "",
+        "Required": {
+            "Parameters": {
+                "at least 1 edit parameter": "any parameter not '*_id' or '*_time'",
+                "at least 1 reference parameter": "any '*_id' or '*_time' parameter or 'filter'"
+                }
+        },
         "Response": {
-            "": "",
-            "": "",
+            "message": "number of edits made",
+            "submitted[]": "the parameters that were submitted",
         },
     },
 }
-
 
 usage_delete = {
-    "message": "usage info",
-    "description": "delete a single entry or multiple entries from a table",
-    "/delete": "returns a list of existing tables",
-    "/delete/<table>": "returns all rows in a table",
-    "/delete/<table>/<column_name>/<column_value>/../..": "query rows matching [name='value', ...]",
-    "/delete/<table>/filter/<filter_string>": "query rows with filter (create_time > '2022-03-30')",
-    "/delete/<table>/<column_name>/<column_value>/../filter/<filter_string>": "use query and filter"
-}
-usage_get = {
-    "message": "usage info: '/get'",
-    "description": "fetch entry/entries from a table: <table_name>",
+    "message": "usage info: '/delete'",
+    "description": "delete entry/entries from a table: <table_name>",
     "endpoints": {
-        "/get": {
+        "/delete": {
             "returns": "return all tables[] in the database",
         },
-        "/get/usage": {
+        "/delete/usage": {
             "returns": "{'message': 'usage-info'}",
         }
-        "/get/<table_name>": {
-            "returns": "",
+        "/delete/<table_name>": {
+            "returns": "message: 'missing a parameter'",
         },
-        "/get/<table_name>/<param_name>/<param_value>": {
-            "url_paths": "match entries: 'param_name=param_value'",
-            "example": "/get/users/username/user_01",
+        "/delete/<table_name>/<param_name>/<param_value>": {
+            "url_paths": "delete entries: 'param_name=param_value'",
+            "example": "/delete/oximeter?filter=(user_id = '8' AND temperature > '100.4')",
             "response": {
-                "message": "",
-                "user_id": 8
+                "message": "6 oximeter entries deleted",
+                "submitted": [{"filter": "(user_id = '8' AND temperature > '100.4')"}]
             },
         },
-        "/get/<table_name>?param_name=param_value": {
-            "params": "match entries: 'param_name=param_value'",
-            "example": "/get/users?username=user_01",
+        "/delete/<table_name>?param_name=param_value": {
+            "params": "delete entries: 'param_name=param_value'",
+            "example": "/delete/oximeter?filter=(user_id = '8' AND temperature > '100.4')",
             "response": {
-                "message": "",
-                "user_id": 8
+                "message": "6 oximeter entries deleted",
+                "submitted": [{"filter": "(user_id = '8' AND temperature > '100.4')"}]
             },
         },
-        "/get/<table_name>/filter/query": {
-            "url_paths": "match entries: 'filter=[query]'",
-            "example": "/get/users/filter/",
+        "/delete/<table_name>/filter/query": {
+            "url_paths": "delete entries: 'filter=[query]'",
+            "example": "/delete/oximeter?filter=(user_id = '8' AND temperature > '100.4')",
             "response": {
-                "message": "",
-                "user_id": 8
+                "message": "6 oximeter entries deleted",
+                "submitted": [{"filter": "(user_id = '8' AND temperature > '100.4')"}]
             },
         },
-        "/get/<table_name>?filter=query": {
-            "params": "match entries: 'filter=[query]'",
-            "example": "/get/users?filter=",
+        "/delete/<table_name>?filter=query": {
+            "params": "delete entries: 'filter=[query]'",
+            "example": "/delete/oximeter?filter=(user_id = '8' AND temperature > '100.4')",
             "response": {
-                "message": "",
-                "user_id": 8
+                "message": "6 oximeter entries deleted",
+                "submitted": [{"filter": "(user_id = '8' AND temperature > '100.4')"}]
             },
         },
-        "Required": "",
-        "Exception": "",
+        "Required": {
+            "Parameters": {
+                "at least 1 reference parameter": "any '*_id' or '*_time' parameter or 'filter'"
+                }
+        },
         "Response": {
-            "": "",
-            "": "",
+            "message": "number of deletes made",
+            "submitted[]": "the parameters that were submitted",
         },
     },
 }
 
 
 
-usage_drop_table = {
-    "message": "usage info",
+usage_delete_table = {
+    "message": "usage info: /deleteTable",
     "description": "delete a table from the database",
     "end_points": {
-        "/dropTable": {
+        "/deleteTable": {
             "returns": "a list of all tables in the database"
         },
-        "/dropTable/<table_name>": {
+        "/deleteTable/<table_name>": {
             "url_paths": [{
                 "<table_name>": "the name of the table you want to delete"
             }],
@@ -258,14 +252,14 @@ usage_drop_table = {
                 "json response": "confirmation message of table deleted"
             }],
             "notes": [{
-                "/dropTable/users": "you define the table_name by placing it in the '/url_path'"
+                "/deleteTable/users": "you define the table_name by placing it in the '/url_path'"
             }],
         },
     },
 }
 
 usage_create_table = {
-    "message": "usage info",
+    "message": "usage info: /createTable",
     "description": "create a table and insert it into the database",
     "end_points": {
         "/createTable": {
@@ -281,6 +275,39 @@ usage_create_table = {
             "notes": [{
                 "/createTable/users": "you define the table_name by placing it in the '/url_path'"
             }],
+        },
+    },
+}
+
+usage_login = {
+    "message": "usage info: /login",
+    "description": "login a user",
+    "end_points": {
+        "/login": {
+            "returns": "message: 'missing parameters'"
+        },
+        "/login/<param_name>/<param_value>": {
+            "url_paths": "login with: 'param_name=param_value'",
+            "example": "",
+            "response": {
+
+            },
+        },
+        "/login?param_name=param_value": {
+            "params": "login with: 'param_name=param_value'",
+            "example": "",
+            "response": {
+
+            },
+        },
+        "Required": {
+            "Parameters": {
+                "at least 1 reference parameter": "any '*_id' or '*_time' parameter or 'filter'"
+                }
+        },
+        "Response": {
+            "message": "number of deletes made",
+            "submitted[]": "the parameters that were submitted",
         },
     },
 }

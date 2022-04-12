@@ -301,7 +301,7 @@ Now that we have added users and sensor data, let's take a look at the next **co
 | Variable | Comment |
 |:--|:--|
 | `data = {obj}` | a single object matching the parameters |
-| `data = [{obj}]` | an array of objects mathcing the parameters |
+| `data = [{obj}]` | an array of objects matching the parameters |
 
 Note:
 > The old functions `/getUser`, `/getUsers`, `/getSensorData`, and `/getAllSensorData` still work but are kept for backward compatibility. <br />
@@ -1128,18 +1128,25 @@ Response:
 ### Endpoints:
 | Resource | Description  |
 |:--|:--|
-| **`/delete`** | returns a list of all existing tables in the database |
-| **`/delete/usage`** | returns a message for how to use this function |
-| **`/delete/{table_name}`** | DEBUG: returns the required parameters |
-| **`/delete/{table_name}/{param_name}/{param_value}`** | delete entries using path parameters |
-| **`/delete/{table_name}?param_name=param_value`**  | delete entries using query parameters |
-| **`/delete/{table_name}/filter/{filter_string}`**  | delete entries matching filter |
-| **`/delete/{table_name}?filter=filter_string`**  | delete entries matching filter  |
+| **`/delete`** | returns all tables[] in the database |
+| **`/delete/usage`** | returns message: 'usage-info' |
+| **`/delete/{table_name}`** | returns message: 'missing a parameter' |
+| **`/delete/{table_name}/{param_name}/{param_value}`** | delete entries: 'param_name=param_value' |
+| **`/delete/{table_name}?param_name=param_value`**  | delete entries: 'param_name=param_value' |
+| **`/delete/{table_name}/filter/{filter_string}`**  | delete entries: filter=[query]' |
+| **`/delete/{table_name}?filter=filter_string`**  | delete entries: filter=[query]' |
 
 ### Requirements:
 | Parameters | Comment  |
 |:--|:--|
 | at least 1 reference parameter | any **`*_id`** or **`*_time`** parameter or **`filter`** |
+
+### Response After Successful [`/delete`](#4-delete):
+| Variable | Comment |
+|:--|:--|
+| `message` | number of deletes made |
+| `submitted[]` | the parameters that were submitted |
+
 
 Note:
 > The old functions `/deleteUser` and `/deleteSensorData` still work but are kept for backward compatibility.
@@ -1382,3 +1389,37 @@ Response:
 The examples listed below will cover the **2 user functions**.
 All examples shown are executed via a **GET** request and can be tested with any browser.
 All endpoints support 4  *HTTP_METHODS*: **GET**, **POST**, **PUT**, **DELETE**
+
+# 1. `/login`
+**Login `table`**
+
+### Endpoints:
+| Resource | Description |
+|:--|:--|
+| **`/login`**  | |
+| **`/login/param_name/param_value`**  | login with: 'param_name=param_value' |
+| **`/login/param_name=param_value`**  | login with: 'param_name=param_value' |
+
+### Requirements:
+| Parameters | Description |
+|:--|:--|
+| username | the user's username |
+| password | the user's password |
+
+## Workflow Example:
+* Let's login the user **`alice`** 
+
+### Investigating the Endpoint: `/login`
+Request:
+```ruby
+/login
+```
+
+Response:
+```json
+{'message': 'missing parameters', 'required': [{'username': 'TEXT', 'password': 'TEXT'}], 'submitted': [{}]}
+```
+
+
+### Let's Login the user `alice`
+
