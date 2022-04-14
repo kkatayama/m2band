@@ -366,7 +366,7 @@ def addTable(db, query="", **kwargs):
         cur = db.execute(query)
     except (sqlite3.ProgrammingError, sqlite3.OperationalError) as e:
         print(e.args)
-        return {"Error": e.args, "query": query, "values": values, "kwargs": kwargs}
+        return {"Error": e.args, "query": query, "columns": columns, "kwargs": kwargs}
     return {"message": f"{abs(cur.rowcount)} table created", "table": table, "columns": columns}
 
 def deleteTable(db, query="", **kwargs):
