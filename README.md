@@ -1,5 +1,7 @@
 # Web Framework
-<details open><summary><h2>Overview</h2></summary>
+
+<h2><details open><summary>Overview</summary></h2>
+
 [https://m2band.hopto.org](https://m2band.hopto.org)
 
 Framework is loosely modeled after CRUD: [C]reate [R]ead [U]pdate [D]elete
