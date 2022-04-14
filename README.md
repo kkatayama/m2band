@@ -1,6 +1,7 @@
 # Web Framework
 
-<h2><details open><summary>Overview</summary></h2>
+<details open>
+<summary><h2>Overview</h2></summary>
 
 [https://m2band.hopto.org](https://m2band.hopto.org)
 
