@@ -3,9 +3,7 @@
 <details>
 <summary>
     <h2>
-    
-    Overview
-    </h2>
+    Overview</h2>
 </summary>
 <p>
 [https://m2band.hopto.org](https://m2band.hopto.org)
