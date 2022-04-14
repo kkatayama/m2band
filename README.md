@@ -1,4 +1,5 @@
 # Web Framework
+<details open><summary>Overview</summary>
 [https://m2band.hopto.org](https://m2band.hopto.org)
 
 Framework is loosely modeled after CRUD: [C]reate [R]ead [U]pdate [D]elete
@@ -74,6 +75,7 @@ Response:
   ]
 }
 ```
+</details>
 
 # Core Functions
 The examples listed below will cover the **4 core functions**
