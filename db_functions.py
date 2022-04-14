@@ -518,8 +518,7 @@ def mapUrlPaths(url_paths, req_items, table=""):
             reject.append({k: v})
 
     columns = id_cols + non_cols + time_cols
-    print(f'params = {params}')
-    print(f'columns = {columns}')
+    print("__params__", params, "__columns__", columns)
     return params, columns
 
 def parseURI(url_paths):
