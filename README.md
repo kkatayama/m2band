@@ -37,8 +37,7 @@ These functions represent the main endpoints of the framework and will handle th
 2. [**`/logout`**](#2-logout) - Logout a user ((no signed cookie or token enabled yet)
 
 ---
-<details><summary>
-<strong>Debugging Tip!  (<i>click me to expand</i>)</strong>
+<details><summary>Debugging Tip!  (click me to expand)
 </summary>
 
 To see all of the available `tables` along with the `column_names` and the `column_types`, make a request to the root path of any core or admin function
@@ -119,6 +118,10 @@ Note: <br />
 ## Workflow Example:
 * [Let's add 2 users to the **`users`** table: `alice` and `bob`](#adding-alice-to-the-users-table)
 * [Then, add sensor data to the **`oximeter`** table for both users](#adding-sensor-data-for-the-user-alice-to-the-oximeter-table)
+
+---
+<details><summary>Show Examples (click here to expand)
+</summary>
 
 ### Investigating the Endpoint: `/add`
 The endpoint for adding a user to the **`users`** is **`/add/users`**.
@@ -280,6 +283,9 @@ Response:
 ```
 
 Now that we have added users and sensor data, let's take a look at the next **core function**: [**`/get`**](#2-get)
+</details>
+
+---
 
 # 2. `/get`
 **Fetch a *single* entry or *multiple* entries from a `table`**
