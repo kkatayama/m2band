@@ -1,4 +1,5 @@
-# <details open><summary><br />Overview</summary>
+<details open><summary>
+# <br />Overview</summary>
 
 [https://m2band.hopto.org](https://m2band.hopto.org)
 
