@@ -2,7 +2,9 @@
 <details>
 
 <summary>
-<font size="26px;">Overview</font>
+
+Overview
+========
 </summary>
 <p>
 [https://m2band.hopto.org](https://m2band.hopto.org)
