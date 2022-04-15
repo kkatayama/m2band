@@ -37,7 +37,7 @@ These functions represent the main endpoints of the framework and will handle th
 2. [**`/logout`**](#2-logout) - Logout a user ((no signed cookie or token enabled yet)
 
 <details id="debug">
-<summary><a href="#debug" onClick={() => debug.setAttribute('open', 'true')}>Debugging Tip!  (click me to expand)</a>
+<summary><a href="#debug" onClick={debug.setAttribute('open', 'true')}>Debugging Tip!  (click me to expand)</a>
 </summary>
 
 To see all of the available `tables` along with the `column_names` and the `column_types`, make a request to the root path of any core or admin function
