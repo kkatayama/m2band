@@ -40,6 +40,7 @@ These functions represent the main endpoints of the framework and will handle th
 <summary>
 
 [Debugging Tip!  (click me to expand)]
+
 </summary>
 
 To see all of the available `tables` along with the `column_names` and the `column_types`, make a request to the root path of any core or admin function
