@@ -2,9 +2,9 @@
 <details>
 
 <summary>
-<header>
-<h2>Overview</h2>
-</header>
+<p>
+    <h2>Overview</h2>
+</p>
 </summary>
 <p>
 [https://m2band.hopto.org](https://m2band.hopto.org)
