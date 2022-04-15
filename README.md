@@ -1183,6 +1183,9 @@ Note:
 * Robert wasn't too happy that we were able to detect that he had a fever
   * [Let's delete all entries for `Robert` with **`temperature`** in the fever range](#deleting-all-entries-for-robert-with-temperature-in-the-fever-range)
 
+---
+<details><summary>Show Workflow Example (click here to expand)
+</summary>
 
 ### Investigating the Endpoint: `/delete`
 The endpoint for deleting an entry from the **`oximeter`** table is **`/delete/oximeter`**.
@@ -1247,7 +1250,9 @@ Response:
     ]
 }
 ```
+</details>
 
+---
 
 # Admin Functions
 The examples listed below will cover the **2 admin functions**.
@@ -1279,6 +1284,10 @@ All endpoints support 4  *HTTP_METHODS*: **GET**, **POST**, **PUT**, **DELETE**
 ## Workflow Example:
 * Let's create a table named **`steps`** <br /> 
   with the columns **`["step_id", "user_id", "step_count", "latitude", "longitude", "step_time"]`**
+
+---
+<details><summary>Show Workflow Example (click here to expand)
+</summary>
 
 ### Investigating the Endpoint: `/createTable`
 The endpoint for creating a **`table`** with a **`table_name`** is **`/createTable/{table_name}`**. <br />
@@ -1339,6 +1348,9 @@ Response:
     ]
 }
 ```
+</details>
+
+---
 
 # 2. `/deleteTable`
 **Delete `table`**
@@ -1357,6 +1369,10 @@ Response:
 
 ## Workflow Example:
 * Let's delete the table named **`steps`** 
+
+---
+<details><summary>Show Workflow Example (click here to expand)
+</summary>
 
 ### Investigating the Endpoint: `/deleteTable`
 The endpoint for deleting a **`table`** with a **`table_name`** is **`/deleteTable/{table_name}`**.
@@ -1409,7 +1425,10 @@ Response:
     ]
 }
 ```
+</details> 
 
+--- 
+ 
 # User Functions
 The examples listed below will cover the **2 user functions**.
 All examples shown are executed via a **GET** request and can be tested with any browser.
@@ -1433,6 +1452,10 @@ All endpoints support 4  *HTTP_METHODS*: **GET**, **POST**, **PUT**, **DELETE**
 
 ## Workflow Example:
 * Let's login the user **`alice`** 
+
+---
+<details><summary>Show Workflow Example (click here to expand)
+</summary>
 
 ### Investigating the Endpoint: `/login`
 Request:
@@ -1485,6 +1508,9 @@ Response:
     "message": "user login success", "user_id": 7, "username": "alice@udel.edu"
 }
 ```
+</details>
+
+---
 
 # 2. `/logout`
 **Log out a `user`**
