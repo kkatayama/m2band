@@ -900,6 +900,9 @@ Note:
 * Alice would like her **`temperature`** data to be in celsius
   * [Let's convert the **`temperature`** from **`farenheight`** to **`celsius`**](#converting-the-temperature-from-farenheight-to-celsius-for-alice)
 
+---
+<details><summary>Show Workflow Example (click here to expand)
+</summary>
 
 ### Investigating the Endpoint: `/edit`
 The endpoint to edit a user from the **`users`** is **`/edit/users`**.
@@ -1140,6 +1143,9 @@ Response:
     ]
 }
 ```
+</details>
+
+---
 
 # 4. `/delete`
 **Delete a single entry or multiple entries of a table**
