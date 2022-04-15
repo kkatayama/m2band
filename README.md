@@ -120,7 +120,7 @@ Note: <br />
 * [Then, add sensor data to the **`oximeter`** table for both users](#adding-sensor-data-for-the-user-alice-to-the-oximeter-table)
 
 ---
-<details><summary>Show Examples (click here to expand)
+<details><summary>Show Workflow Example (click here to expand)
 </summary>
 
 ### Investigating the Endpoint: `/add`
@@ -332,6 +332,9 @@ Note:
   * [Test Case](#test-case-min-max-temperature-range): What was the range of **`temperature`** for this user? **min**? **max**?
   * [Test Case](#test-case-filter-users-created-after-a-start-date-but-before-an-end-date): Filter users created after a *start date* but before an *end date*.
 
+---
+<details><summary>Show Workflow Example (click here to expand)
+</summary>
 
 ### Investigating the Endpoint: `/get`
 The endpoint for getting users from the **`users`** table is **`/get/users`**.
@@ -853,6 +856,9 @@ Response:
     ]
 }
 ```
+</details>
+
+---
 
 # 3. `/edit`
 **Edit a single entry or multiple entries of a table**
