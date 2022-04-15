@@ -39,7 +39,6 @@ These functions represent the main endpoints of the framework and will handle th
 <details>
 
 <summary>
-
 [Debugging Tip!  (click me to expand)]
 
 </summary>
