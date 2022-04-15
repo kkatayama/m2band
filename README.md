@@ -37,6 +37,7 @@ These functions represent the main endpoints of the framework and will handle th
 2. [**`/logout`**](#2-logout) - Logout a user ((no signed cookie or token enabled yet)
 
 <details><summary>
+
 #### Debugging Tip!  (click me to expand)
 </summary>
 
