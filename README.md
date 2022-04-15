@@ -41,8 +41,6 @@ These functions represent the main endpoints of the framework and will handle th
 <strong>Debugging Tip!  (<i>click me to expand</i>)</strong>
 </summary>
 
----
-
 To see all of the available `tables` along with the `column_names` and the `column_types`, make a request to the root path of any core or admin function
 
 Request:
@@ -81,6 +79,7 @@ Response:
 }
 ```
 </details>
+---
 
 # Core Functions
 The examples listed below will cover the **4 core functions**
