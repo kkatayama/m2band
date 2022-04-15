@@ -319,7 +319,6 @@ def createTable(db, table_name="", url_paths=""):
     #            "missing": [missing_params], "submitted": [params]}
     #     return clean(res)
 
-
     # -- CREATE TABLE <table>
     res = addTable(db, table=table_name, columns=columns)
     res.update({"table": table_name})
@@ -396,17 +395,6 @@ def deleteSensorData(db):
     print(f"request.url = {request.url}")
     return redirect(f'https://m2band.hopto.org/delete/oximeter?{urlencode(request.params)}')
 
-
-###############################################################################
-#                                TESTING / DEBUG                              #
-###############################################################################
-@route("/test", method=["GET", "POST", "PUT", "DELETE"])
-def test(db):
-    print(f"request.url = {request.url}")
-    print(f"request.urlparts.query = {request.urlparts.query}")
-    print(f"request.query_string = {request.query_string}")
-    print(f"request.params = {dict(request.params)}")
-    return redirect(f'/get/users?{urlencode(request.params)}')
 
 
 # -- Run Web Server
