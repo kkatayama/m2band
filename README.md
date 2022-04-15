@@ -36,9 +36,9 @@ These functions represent the main endpoints of the framework and will handle th
 1. [**`/login`**](#1-login) - Login a user (no signed cookie or token enabled yet)
 2. [**`/logout`**](#2-logout) - Logout a user ((no signed cookie or token enabled yet)
 
-<br />
 <details><summary>
-<strong>Debugging Tip!  (<i>click me to expand</i>)</strong>
+
+#### Debugging Tip!  (click me to expand)
 </summary>
 
 To see all of the available `tables` along with the `column_names` and the `column_types`, make a request to the root path of any core or admin function
