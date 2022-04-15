@@ -1,0 +1,13 @@
+[Unit]
+Description=m2band Web Framework
+After=network.target
+
+[Service]
+User=katayama
+WorkingDirectory=/home/katayama/Documents/m2band
+ExecStart=/usr/bin/python3 server.py
+EnvironmentFile=/home/katayama/Documents/m2band/systemd/m2band_service.conf
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
