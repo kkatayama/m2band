@@ -79,6 +79,7 @@ Response:
 }
 ```
 </details>
+
 ---
 
 # Core Functions
