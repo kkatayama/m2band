@@ -87,7 +87,7 @@ def insertRow(db, query="", **kwargs):
         cur = db.execute(query, col_values) if col_values else db.execute(query)
     except (sqlite3.ProgrammingError, sqlite3.OperationalError) as e:
         print(e.args)
-        return {"Error": e.args, "query": query, "col_values": col_values, "kwargs": kwargs}
+        return {"SQLite_Error": e.args, "query": query, "col_values": col_values, "kwargs": kwargs}
 
     # if cur:
     return cur.lastrowid
@@ -154,7 +154,7 @@ def fetchRow(db, query="", **kwargs):
         row = db.execute(query, values).fetchone() if values else db.execute(query).fetchone()
     except (sqlite3.ProgrammingError, sqlite3.OperationalError) as e:
         print(e.args)
-        return {"Error": e.args, "query": query, "values": values, "kwargs": kwargs}
+        return {"SQLite_Error": e.args, "query": query, "values": values, "kwargs": kwargs}
 
     if row:
         return dict(row)
@@ -218,7 +218,7 @@ def fetchRows(db, query="", **kwargs):
         rows = db.execute(query, values).fetchall() if values else db.execute(query).fetchall()
     except (sqlite3.ProgrammingError, sqlite3.OperationalError) as e:
         print(e.args)
-        return {"Error": e.args, "query": query, "values": values, "kwargs": kwargs}
+        return {"SQLite_Error": e.args, "query": query, "values": values, "kwargs": kwargs}
 
     if rows:
         if ((len(rows) == 1) and (not kwargs.get("force"))):
@@ -291,7 +291,7 @@ def updateRow(db, query="", **kwargs):
         cur = db.execute(query, col_values+values) if (col_values or values) else db.execute(query)
     except (sqlite3.ProgrammingError, sqlite3.OperationalError) as e:
         print(e.args)
-        return {"Error": e.args, "query": query, "col_values": col_values, "values": values, "kwargs": kwargs}
+        return {"SQLite_Error": e.args, "query": query, "col_values": col_values, "values": values, "kwargs": kwargs}
 
     return cur.rowcount
 
@@ -347,7 +347,7 @@ def deleteRow(db, query="", **kwargs):
         cur = db.execute(query, values)
     except (sqlite3.ProgrammingError, sqlite3.OperationalError) as e:
         print(e.args)
-        return {"Error": e.args, "query": query, "values": values, "kwargs": kwargs}
+        return {"SQLite_Error": e.args, "query": query, "values": values, "kwargs": kwargs}
 
     return cur.rowcount
 
@@ -366,7 +366,7 @@ def addTable(db, query="", **kwargs):
         cur = db.execute(query)
     except (sqlite3.ProgrammingError, sqlite3.OperationalError) as e:
         print(e.args)
-        return {"Error": e.args, "query": query, "columns": columns, "kwargs": kwargs}
+        return {"SQLite_Error": e.args, "query": query, "columns": columns, "kwargs": kwargs}
     return {"message": f"{abs(cur.rowcount)} table created", "table": table, "columns": columns}
 
 def deleteTable(db, query="", **kwargs):
@@ -380,7 +380,7 @@ def deleteTable(db, query="", **kwargs):
         cur = db.execute(query)
     except (sqlite3.ProgrammingError, sqlite3.OperationalError) as e:
         print(e.args)
-        return {"Error": e.args, "query": query, "values": values, "kwargs": kwargs}
+        return {"SQLite_Error": e.args, "query": query, "values": values, "kwargs": kwargs}
     return {"message": f"{abs(cur.rowcount)} table deleted!"}
 
 def getTable(db, tables=[], table_name=''):
