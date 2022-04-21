@@ -623,7 +623,8 @@ def log_to_logger(fn):
         logger.info(f'type(actual_response) = {type(actual_response)}')
         if isinstance(actual_response, str):
             try:
-                temp = json.loads(actual_response)
+                soup = BeautifulSoup(actual_response, "html5lib")
+                temp = json.loads(soup.select_one('pre').encode_contents())
                 actual_response = temp
             except:
                 pass
