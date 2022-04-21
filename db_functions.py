@@ -620,15 +620,6 @@ def log_to_logger(fn):
                                         request.method,
                                         request.url,
                                         response.status))
-        logger.info(f'type(actual_response) = {type(actual_response)}')
-        if isinstance(actual_response, str):
-            try:
-                soup = BeautifulSoup(actual_response, "html5lib")
-                temp = json.loads(soup.select_one('pre').encode_contents())
-                actual_response = temp
-            except:
-                pass
-        logger.info(f'type(actual_response) = {type(actual_response)}')
 
         if isinstance(actual_response, dict):
             if not actual_response.get("message") == "available commands":
@@ -636,7 +627,7 @@ def log_to_logger(fn):
                 logger.info(json.dumps(actual_response, default=str, indent=2))
         else:
             soup = BeautifulSoup(actual_response, 'html5lib')
-            logger.info(json.dumps(json.loads(soup.select_one("pre").getText()), indent=2))
+            # logger.info(json.dumps(json.loads(soup.select_one("pre").getText()), indent=2))
             # logger.info(json.dumps({'msg': }, default=str, indent=2))
             # logger.info(actual_response)
         return actual_response
