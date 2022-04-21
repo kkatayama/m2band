@@ -659,8 +659,8 @@ class ErrorsRestPlugin(object):
             self.json_dumps = json_dumps
 
         def default_error_handler(res):
-            if res.content_type == "application/json":
-                return res.body
+            # if res.content_type == "application/json":
+            #     return res.body
             res.content_type = "application/json"
 
             err_res = dict(res)
