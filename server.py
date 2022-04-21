@@ -1,6 +1,6 @@
 from bottle import hook, install, route, run, request, response, redirect, static_file, urlencode, HTTPError
 from bottle_sqlite import SQLitePlugin, sqlite3
-from bottle_errorsrest import ErrorsRestPlugin
+# from bottle_errorsrest import ErrorsRestPlugin
 from datetime import datetime
 from db_functions import *
 from rich import print, inspect

@@ -452,7 +452,7 @@ def checkPassword(plaintext, hex_pass):
         return True
     return False
 
-def clean(data):
+def checkUserAgent():
     user_agent = request.environ["HTTP_USER_AGENT"] if request.environ.get("HTTP_USER_AGENT") else ""
     browser_agents = [
         "Mozilla",
@@ -469,14 +469,20 @@ def clean(data):
     print(f'user_agent = {user_agent}')
     regex = r"({})".format("|".join(browser_agents))
 
+    if re.search(regex, user_agent):
+        print({"user-agent": user_agent})
+        return True
+    return False
+
+
+def clean(data):
     if isinstance(data, dict):
         for k, v in data.items():
             if isinstance(v, FormsDict):
                 data.update({k: dict(v)})
 
     str_data = json.dumps(data, default=str, indent=2)
-    if re.search(regex, user_agent):
-        print(str_data)
+    if checkUserAgent():
         return template("templates/prettify.tpl", data=str_data)
 
     cleaned = json.loads(str_data)
@@ -634,6 +640,49 @@ def log_to_logger(fn):
     return _log_to_logger
 
 logger = getLogger()
+
+# ErrorRestPlugin #############################################################
+class ErrorsRestPlugin(object):
+    name = 'ErrorsRestPlugin'
+    api = 2
+
+    def __init__(self, dumps=None):
+        self.json_dumps = dumps
+
+    def setup(self, app):
+        for plugin in app.plugins:
+            if isinstance(plugin, JSONPlugin):
+                self.json_dumps = plugin.json_dumps
+                break
+
+        if not self.json_dumps:
+            self.json_dumps = json_dumps
+
+        def default_error_handler(res):
+            print('#'*200)
+            print(f'\n\nres = {res.__dict__}\n\n')
+            print('#'*200)
+            if res.content_type == "application/json":
+                return res.body
+            res.content_type = "application/json"
+
+            err_res = res.__dict__
+            err_res["traceback"] = err_res["traceback"].splitlines()
+            if res.status_code == 500:
+                err = {"Python Error": err_res}
+            else:
+                err = {"Error": err_res}
+
+            if checkUserAgent():
+                res.content_type = "text/html; charset=UTF-8"
+
+            return clean(dict(**{'message': str(res.body)}, **err))
+
+        app.default_error_handler = default_error_handler
+
+    def apply(self, callback, route):
+        return callback
+
 
 # DEPRECATED FUNCTIONS ########################################################
 """
