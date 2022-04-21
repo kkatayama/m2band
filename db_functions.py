@@ -663,13 +663,15 @@ class ErrorsRestPlugin(object):
             print(f'CONTENT-TYPE: {res.content_type}')
             print('-'*100)
             print(f'\n\nres = {res.__dict__}\n\n')
+            print(f'\n\n{inspect(ress)}\n\n')
             print('#'*100)
             if res.content_type == "application/json":
                 return res.body
             res.content_type = "application/json"
 
             err_res = res.__dict__
-            err_res["traceback"] = err_res["traceback"].splitlines()
+            if isinstance(err_res.get("traceback"), str):
+                err_res["traceback"] = err_res["traceback"].splitlines()
             if res.status_code == 500:
                 err = {"Python Error": err_res}
             else:
