@@ -1,5 +1,6 @@
-from bottle import hook, install, route, run, request, response, redirect, static_file, urlencode
+from bottle import hook, install, route, run, request, response, redirect, static_file, urlencode, HTTPError
 from bottle_sqlite import SQLitePlugin, sqlite3
+from bottle_errorsrest import ErrorsRestPlugin
 from datetime import datetime
 from db_functions import *
 from rich import print, inspect
@@ -14,6 +15,7 @@ app = bottle.app()
 plugin = SQLitePlugin(dbfile="m2band.db", detect_types=sqlite3.PARSE_DECLTYPES|sqlite3.PARSE_COLNAMES)
 app.install(plugin)
 app.install(log_to_logger)
+app.install(ErrorsRestPlugin())
 
 # -- hook to strip trailing slash
 @hook('before_request')
