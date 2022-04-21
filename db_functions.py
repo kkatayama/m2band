@@ -621,6 +621,14 @@ def log_to_logger(fn):
                                         request.url,
                                         response.status))
         logger.info(f'type(actual_response) = {type(actual_response)}')
+        if isinstance(actual_response, str):
+            try:
+                temp = json.loads(actual_response)
+                actual_response = temp
+            except:
+                pass
+        logger.info(f'type(actual_response) = {type(actual_response)}')
+
         if isinstance(actual_response, dict):
             if not actual_response.get("message") == "available commands":
                 logger.info(json.dumps({"request.params": dict(request.params)}))
