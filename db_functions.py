@@ -19,7 +19,7 @@ from bottle import request, response, FormsDict, template, json_dumps, JSONPlugi
 from datetime import datetime
 from functools import wraps
 from pathlib import Path
-from rich import print
+from rich import print, inspect
 from bs4 import BeautifulSoup
 import subprocess
 import logging
@@ -663,7 +663,7 @@ class ErrorsRestPlugin(object):
             print(f'CONTENT-TYPE: {res.content_type}')
             print('-'*100)
             print(f'\n\nres = {res.__dict__}\n\n')
-            print(f'\n\n{inspect(ress)}\n\n')
+            print(f'\n\n{inspect(res)}\n\n')
             print('#'*100)
 
             if res.content_type == "application/json":
