@@ -15,7 +15,7 @@ All functions support a full SQL [query] or a python [dict]
 # -- checkPassword()    - check if password matches
 # -- clean()            - sanitize data for json delivery
 """
-from bottle import request, response, FormsDict, template
+from bottle import request, response, FormsDict, template, json_dumps, JSONPlugin
 from datetime import datetime
 from functools import wraps
 from pathlib import Path
