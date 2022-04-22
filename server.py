@@ -1,13 +1,26 @@
-from bottle import hook, install, route, run, request, response, redirect, static_file, urlencode, HTTPError
+# from bottle import hook, install, route, run, request, response, redirect, static_file, urlencode, HTTPError
+from bottle import hook, route, run, request, redirect, urlencode
 from bottle_sqlite import SQLitePlugin, sqlite3
 # from bottle_errorsrest import ErrorsRestPlugin
-from datetime import datetime
-from db_functions import *
-from rich import print, inspect
-from docs.usage import *
+# from datetime import datetime
+from db_functions import (
+    insertRow, fetchRow, fetchRows, updateRow, deleteRow,
+    addTable, deleteTable, getTable, getTables, getColumns,
+    securePassword, checkPassword, checkUserAgent,
+    clean, extract, mapUrlPaths, getLogger, log_to_logger, logger,
+    parseURI, parseUrlPaths, parseFilters, parseColumnValues,
+    ErrorsRestPlugin
+)
+from rich import print
+from docs.usage import (
+    usage_add, usage_get, usage_edit, usage_delete,
+    usage_create_table, usage_delete_table,
+    usage_login, usage_logout
+)
 import bottle
 import json
 import os
+import re
 
 
 # app = Bottle()
@@ -56,11 +69,11 @@ def add(db, table_name="", url_paths=""):
 
     # -- parse "params" and "filters" from HTTP request
     required_columns = getColumns(db, table, required=True)
-    params, filters  = parseUrlPaths(url_paths, request.params, required_columns)
+    params, filters = parseUrlPaths(url_paths, request.params, required_columns)
 
     # -- check for required parameters
     missing_keys = (params.keys() ^ required_columns.keys())
-    missing_params = {k:table["columns"][k] for k in required_columns if k in missing_keys}
+    missing_params = {k: table["columns"][k] for k in required_columns if k in missing_keys}
     if missing_params:
         res = {"message": "missing paramaters", "required": [required_columns],
                "missing": [missing_params], "submitted": [params]}
@@ -111,7 +124,7 @@ def get(db, table_name="", url_paths=""):
 
     # -- build "conditions" string and "values" array for "fetchRows()"
     conditions = " AND ".join([f"{param}=?" for param in params.keys()])
-    values     = list(params.values())
+    values = list(params.values())
     if filters:
         conditions, values = parseFilters(filters, conditions, values)
 
@@ -150,7 +163,7 @@ def edit(db, table_name="", url_paths=""):
     # -- parse "params" and "filters" from HTTP request
     editable_columns = getColumns(db, table, editable=True)
     non_edit_columns = getColumns(db, table, non_editable=True)
-    params, filters  = parseUrlPaths(url_paths, request.params, table["columns"])
+    params, filters = parseUrlPaths(url_paths, request.params, table["columns"])
     print(f"params = {params}\nfilters = '{filters}'")
 
     # -- the users table requires additional formatting and checking
@@ -178,7 +191,7 @@ def edit(db, table_name="", url_paths=""):
 
     # -- build "conditions" string and "values" string/array for "updateRow()"
     conditions = " AND ".join([f"{param}=?" for param in non_edit_columns if params.get(param)])
-    values     = [params[param] for param in non_edit_columns if params.get(param)]
+    values = [params[param] for param in non_edit_columns if params.get(param)]
     if filters:
         conditions, values = parseFilters(filters, conditions, values)
 
@@ -220,7 +233,7 @@ def delete(db, table_name="", url_paths=""):
         return clean({"message": "active tables in the database", "tables": tables})
 
     # -- parse "params" and "filters" from HTTP request
-    params, filters  = parseUrlPaths(url_paths, request.params, table["columns"])
+    params, filters = parseUrlPaths(url_paths, request.params, table["columns"])
     print(f"params = {params}\nfilters = '{filters}'")
 
     # -- to prevent accidental deletion of everything, at least 1 parameter is required
@@ -232,7 +245,7 @@ def delete(db, table_name="", url_paths=""):
 
     # -- build "conditions" string and "values" string/array for "updateRow()"
     conditions = " AND ".join([f"{param}=?" for param in table["columns"] if params.get(param)])
-    values     = [params[param] for param in table["columns"] if params.get(param)]
+    values = [params[param] for param in table["columns"] if params.get(param)]
     if filters:
         conditions, values = parseFilters(filters, conditions, values)
 
@@ -262,7 +275,7 @@ def login(db, url_paths=""):
     # -- parse "params" and "filters" from HTTP request
     table = getTable(db, table_name="users")
     required_columns = getColumns(db, table, required=True)
-    params, filters  = parseUrlPaths(url_paths, request.params, required_columns)
+    params, filters = parseUrlPaths(url_paths, request.params, required_columns)
     print(f"params = {params}\nfilters = '{filters}'")
 
     # -- check for required parameters
@@ -396,7 +409,6 @@ def editSensorData(db):
 def deleteSensorData(db):
     print(f"request.url = {request.url}")
     return redirect(f'https://m2band.hopto.org/delete/oximeter?{urlencode(request.params)}')
-
 
 
 # -- Run Web Server

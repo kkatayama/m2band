@@ -18,15 +18,16 @@ All functions support a full SQL [query] or a python [dict]
 from bottle import request, response, FormsDict, template, json_dumps, JSONPlugin
 from datetime import datetime
 from functools import wraps
-from pathlib import Path
+# from pathlib import Path
 from rich import print, inspect
 from bs4 import BeautifulSoup
-import subprocess
+# import subprocess
+import traceback
 import logging
 import sqlite3
 import hashlib
 import codecs
-import time
+# import time
 import json
 import os
 import re
@@ -72,22 +73,39 @@ def insertRow(db, query="", **kwargs):
         user_id = insertRow(db, **params)
     """
     if query:
+        table = ""
+        columns = []
         col_values = kwargs.get("col_values")
     else:
         # table      = kwargs["table"]
-        table      = kwargs["table"]["name"] if isinstance(kwargs.get("table"), dict) else kwargs.get("table")
-        columns    = kwargs["columns"]
+        table = kwargs["table"]["name"] if isinstance(kwargs.get("table"), dict) else kwargs.get("table")
+        columns = kwargs["columns"]
         col_values = kwargs["col_values"]
         query = f"INSERT INTO {table} ({','.join(columns)}) VALUES ({', '.join(['?']*len(columns))});"
-    print(query)
-    if col_values:
-        print(" "*query.find("?"), col_values)
+    print(query, col_values) if col_values else print(query)
 
     try:
         cur = db.execute(query, col_values) if col_values else db.execute(query)
-    except (sqlite3.ProgrammingError, sqlite3.OperationalError) as e:
-        print(e.args)
-        return {"SQLite_Error": e.args, "query": query, "col_values": col_values, "kwargs": kwargs}
+    except sqlite3.Error as e:
+        exc_type, exc_value, exc_tb = sys.exc_info()
+        tb_msgs = traceback.format_exception(exc_type, exc_value, exc_tb)
+        if isinstance(tb_msgs, list):
+            tb_msgs = ''.join(tb_msgs).splitlines()
+        err = {
+            f'SQLite.{e.__class__.__name__}': f'{" ".join(e.args)}',
+            'Debug Info': {
+                "query": query,
+                "kwargs": kwargs,
+                "parsed": {"table": table, "columns": columns, "col_values": col_values}
+            },
+            'SQLite Traceback': tb_msgs
+        }
+        print(err)
+        return err
+
+    # except (sqlite3.ProgrammingError, sqlite3.OperationalError) as e:
+    #     print(e.args)
+    #     return {"SQLite_Error": e.args, "query": query, "col_values": col_values, "kwargs": kwargs}
 
     # if cur:
     return cur.lastrowid
@@ -130,31 +148,41 @@ def fetchRow(db, query="", **kwargs):
         row = fetchRow(db, **params)
     """
     if query:
+        table = ""
+        columns = []
+        condition = ""
         values = [kwargs.get("values")] if isinstance(kwargs.get("values"), str) else kwargs.get("values")
     else:
         # table     = kwargs.get("table")
-        table     = kwargs["table"]["name"] if isinstance(kwargs.get("table"), dict) else kwargs.get("table")
-        columns   = "*" if not kwargs.get("columns") else ",".join(kwargs["columns"])
-        # condition = "1" if not kwargs.get("where") else f'({kwargs["where"]})'
+        table = kwargs["table"]["name"] if isinstance(kwargs.get("table"), dict) else kwargs.get("table")
+        columns = "*" if not kwargs.get("columns") else ",".join(kwargs["columns"])
         condition = "1" if not kwargs.get("where") else f'{kwargs["where"]}'
-        values    = [kwargs.get("values")] if isinstance(kwargs.get("values"), str) else kwargs.get("values")
+        values = [kwargs.get("values")] if isinstance(kwargs.get("values"), str) else kwargs.get("values")
         query = f"SELECT {columns} FROM {table} WHERE {condition};"
-
-        # if condition:
-        #     query = f"SELECT {columns} FROM {table} WHERE {condition};"
-        # else:
-        #     query = f"SELECT {columns} FROM {table};"
-    print({'kwargs': kwargs})
-
-    print(query)
-    if values:
-        print(" "*query.find("?"), values)
+    print(query, values) if values else print(query)
 
     try:
         row = db.execute(query, values).fetchone() if values else db.execute(query).fetchone()
-    except (sqlite3.ProgrammingError, sqlite3.OperationalError) as e:
-        print(e.args)
-        return {"SQLite_Error": e.args, "query": query, "values": values, "kwargs": kwargs}
+    except sqlite3.Error as e:
+        exc_type, exc_value, exc_tb = sys.exc_info()
+        tb_msgs = traceback.format_exception(exc_type, exc_value, exc_tb)
+        if isinstance(tb_msgs, list):
+            tb_msgs = ''.join(tb_msgs).splitlines()
+        err = {
+            f'SQLite.{e.__class__.__name__}': f'{" ".join(e.args)}',
+            'Debug Info': {
+                "query": query,
+                "kwargs": kwargs,
+                "parsed": {"table": table, "columns": columns, "condition": condition, "values": values}
+            },
+            'SQLite Traceback': tb_msgs
+        }
+        print(err)
+        return err
+
+    # except (sqlite3.ProgrammingError, sqlite3.OperationalError) as e:
+    #     print(e.args)
+    #     return {"SQLite_Error": e.args, "query": query, "values": values, "kwargs": kwargs}
 
     if row:
         return dict(row)
@@ -196,29 +224,40 @@ def fetchRows(db, query="", **kwargs):
         rows = fetchRows(db, **params)
     """
     if query:
+        table = ""
+        columns = []
+        condition = ""
         values = [kwargs.get("values")] if isinstance(kwargs.get("values"), str) else kwargs.get("values")
     else:
-        table     = kwargs["table"]["name"] if isinstance(kwargs.get("table"), dict) else kwargs.get("table")
-        columns   = "*" if not kwargs.get("columns") else ",".join(kwargs["columns"])
-        # condition = "1" if not kwargs.get("where") else f'({kwargs["where"]})'
+        table = kwargs["table"]["name"] if isinstance(kwargs.get("table"), dict) else kwargs.get("table")
+        columns = "*" if not kwargs.get("columns") else ",".join(kwargs["columns"])
         condition = "1" if not kwargs.get("where") else f'{kwargs["where"]}'
-        values    = [kwargs.get("values")] if isinstance(kwargs.get("values"), str) else kwargs.get("values")
-
-        # if condition:
-        #     query = f"SELECT {columns} FROM {table} WHERE {condition};"
-        # else:
-        #     query = f"SELECT {columns} FROM {table};"
+        values = [kwargs.get("values")] if isinstance(kwargs.get("values"), str) else kwargs.get("values")
         query = f"SELECT {columns} FROM {table} WHERE {condition};"
-    print({'kwargs': kwargs})
-    print(query)
-    if values:
-        print(" "*query.find("?"), values)
+    print(query, values) if values else print(query)
 
     try:
         rows = db.execute(query, values).fetchall() if values else db.execute(query).fetchall()
-    except (sqlite3.ProgrammingError, sqlite3.OperationalError) as e:
-        print(e.args)
-        return {"SQLite_Error": e.args, "query": query, "values": values, "kwargs": kwargs}
+    except sqlite3.Error as e:
+        exc_type, exc_value, exc_tb = sys.exc_info()
+        tb_msgs = traceback.format_exception(exc_type, exc_value, exc_tb)
+        if isinstance(tb_msgs, list):
+            tb_msgs = ''.join(tb_msgs).splitlines()
+        err = {
+            f'SQLite.{e.__class__.__name__}': f'{" ".join(e.args)}',
+            'Debug Info': {
+                "query": query,
+                "kwargs": kwargs,
+                "parsed": {"table": table, "columns": columns, "condition": condition, "values": values}
+            },
+            'SQLite Traceback': tb_msgs
+        }
+        print(err)
+        return err
+
+    # except (sqlite3.ProgrammingError, sqlite3.OperationalError) as e:
+    #     print(e.args)
+    #     return {"SQLite_Error": e.args, "query": query, "values": values, "kwargs": kwargs}
 
     if rows:
         if ((len(rows) == 1) and (not kwargs.get("force"))):
@@ -273,25 +312,44 @@ def updateRow(db, query="", **kwargs):
         num_edits = updateRow(db, **params)
     """
     if query:
+        table = ""
+        columns = []
+        condition = ""
         col_values = kwargs.get("col_values")
-        values     = [kwargs.get("values")] if isinstance(kwargs.get("values"), str) else kwargs.get("values")
+        values = [kwargs.get("values")] if isinstance(kwargs.get("values"), str) else kwargs.get("values")
     else:
-        table      = kwargs["table"]["name"] if isinstance(kwargs.get("table"), dict) else kwargs.get("table")
-        # table      = kwargs.get("table")
-        # columns    = ", ".join([f"{col}=?" for col in kwargs["columns"]])
-        # col_values = kwargs["col_values"]
+        table = kwargs["table"]["name"] if isinstance(kwargs.get("table"), dict) else kwargs.get("table")
         columns, col_values = parseColumnValues(kwargs["columns"], kwargs["col_values"])
-        condition  = f'({kwargs["where"]})'
-        values     = [kwargs["values"]] if isinstance(kwargs["values"], str) else kwargs["values"]
+        condition = f'({kwargs["where"]})'
+        values = [kwargs["values"]] if isinstance(kwargs["values"], str) else kwargs["values"]
         query = f"UPDATE {table} SET {columns} WHERE {condition};"
-    print(query)
-    print(" "*query.find("?"), col_values, values)
+    print(query, col_values, values) if (col_values and values) else print(query)
 
     try:
         cur = db.execute(query, col_values+values) if (col_values or values) else db.execute(query)
-    except (sqlite3.ProgrammingError, sqlite3.OperationalError) as e:
-        print(e.args)
-        return {"SQLite_Error": e.args, "query": query, "col_values": col_values, "values": values, "kwargs": kwargs}
+    except sqlite3.Error as e:
+        exc_type, exc_value, exc_tb = sys.exc_info()
+        tb_msgs = traceback.format_exception(exc_type, exc_value, exc_tb)
+        if isinstance(tb_msgs, list):
+            tb_msgs = ''.join(tb_msgs).splitlines()
+        err = {
+            f'SQLite.{e.__class__.__name__}': f'{" ".join(e.args)}',
+            'Debug Info': {
+                "query": query,
+                "kwargs": kwargs,
+                "parsed": {
+                    "table": table, "columns": columns, "col_values": col_values,
+                    "condition": condition, "values": values
+                }
+            },
+            'SQLite Traceback': tb_msgs
+        }
+        print(err)
+        return err
+
+    # except (sqlite3.ProgrammingError, sqlite3.OperationalError) as e:
+    #     print(e.args)
+    #     return {"SQLite_Error": e.args, "query": query, "col_values": col_values, "values": values, "kwargs": kwargs}
 
     return cur.rowcount
 
@@ -333,21 +391,41 @@ def deleteRow(db, query="", **kwargs):
         num_deletes = deleteRow(db, **params)
     """
     if query:
+        table = ""
+        condition = ""
         values = [kwargs["values"]] if isinstance(kwargs["values"], str) else kwargs["values"]
     else:
-        # table      = kwargs.get("table")
-        table      = kwargs["table"]["name"] if isinstance(kwargs.get("table"), dict) else kwargs.get("table")
-        condition  = f'({kwargs["where"]})'
-        values     = [kwargs["values"]] if isinstance(kwargs["values"], str) else kwargs["values"]
+        # table = kwargs.get("table")
+        table = kwargs["table"]["name"] if isinstance(kwargs.get("table"), dict) else kwargs.get("table")
+        condition = f'({kwargs["where"]})'
+        values = [kwargs["values"]] if isinstance(kwargs["values"], str) else kwargs["values"]
         query = f"DELETE FROM {table} WHERE {condition};"
-    print(query)
-    print(" "*query.find("?"), values)
+    print(query, values) if values else print(query)
 
     try:
         cur = db.execute(query, values)
-    except (sqlite3.ProgrammingError, sqlite3.OperationalError) as e:
-        print(e.args)
-        return {"SQLite_Error": e.args, "query": query, "values": values, "kwargs": kwargs}
+    except sqlite3.Error as e:
+        exc_type, exc_value, exc_tb = sys.exc_info()
+        tb_msgs = traceback.format_exception(exc_type, exc_value, exc_tb)
+        if isinstance(tb_msgs, list):
+            tb_msgs = ''.join(tb_msgs).splitlines()
+        err = {
+            f'SQLite.{e.__class__.__name__}': f'{" ".join(e.args)}',
+            'Debug Info': {
+                "query": query,
+                "kwargs": kwargs,
+                "parsed": {
+                    "table": table, "condition": condition, "values": values
+                }
+            },
+            'SQLite Traceback': tb_msgs
+        }
+        print(err)
+        return err
+
+    # except (sqlite3.ProgrammingError, sqlite3.OperationalError) as e:
+    #     print(e.args)
+    #     return {"SQLite_Error": e.args, "query": query, "values": values, "kwargs": kwargs}
 
     return cur.rowcount
 
@@ -380,7 +458,7 @@ def deleteTable(db, query="", **kwargs):
         cur = db.execute(query)
     except (sqlite3.ProgrammingError, sqlite3.OperationalError) as e:
         print(e.args)
-        return {"SQLite_Error": e.args, "query": query, "values": values, "kwargs": kwargs}
+        return {"SQLite_Error": e.args, "query": query, "kwargs": kwargs}
     return {"message": f"{abs(cur.rowcount)} table deleted!"}
 
 def getTable(db, tables=[], table_name=''):
@@ -470,7 +548,7 @@ def checkUserAgent():
     regex = r"({})".format("|".join(browser_agents))
 
     if re.search(regex, user_agent):
-        print({"user-agent": user_agent})
+        # print({"user-agent": user_agent})
         return True
     return False
 
@@ -482,9 +560,8 @@ def clean(data):
                 data.update({k: dict(v)})
 
     str_data = json.dumps(data, default=str, indent=2)
-    if checkUserAgent():
-        return template("templates/prettify.tpl", data=str_data)
-
+    # if checkUserAgent():
+    #     return template("templates/prettify.tpl", data=str_data)
     cleaned = json.loads(str_data)
     print(cleaned)
     return cleaned
@@ -639,7 +716,9 @@ def log_to_logger(fn):
         return actual_response
     return _log_to_logger
 
+
 logger = getLogger()
+
 
 # ErrorRestPlugin #############################################################
 class ErrorsRestPlugin(object):
@@ -647,9 +726,11 @@ class ErrorsRestPlugin(object):
     api = 2
 
     def __init__(self, dumps=None):
+        """init()"""
         self.json_dumps = dumps
 
     def setup(self, app):
+        """Initialize Handler"""
         for plugin in app.plugins:
             if isinstance(plugin, JSONPlugin):
                 self.json_dumps = plugin.json_dumps
@@ -659,13 +740,6 @@ class ErrorsRestPlugin(object):
             self.json_dumps = json_dumps
 
         def default_error_handler(res):
-            print('#'*100)
-            print(f'CONTENT-TYPE: {res.content_type}')
-            print('-'*100)
-            print(f'\n\nres = {res.__dict__}\n\n')
-            print(f'\n\n{inspect(res)}\n\n')
-            print('#'*100)
-
             if res.content_type == "application/json":
                 return res.body
             res.content_type = "application/json"
@@ -678,16 +752,15 @@ class ErrorsRestPlugin(object):
             else:
                 err = {"Error": err_res}
 
-            if checkUserAgent():
-                res.content_type = "text/html; charset=UTF-8"
-
-
+            # if checkUserAgent():
+            #     res.content_type = "text/html; charset=UTF-8"
 
             return clean(dict(**{'message': str(res.body)}, **err))
 
         app.default_error_handler = default_error_handler
 
     def apply(self, callback, route):
+        """Execute Handler"""
         return callback
 
 
