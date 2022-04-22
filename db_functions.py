@@ -1,4 +1,4 @@
-"""
+"""                             # 3
 # Overview of DB Functions #
 These functions connect to the SQLite Database and execute transactions.
 All functions use "parametrized queries" to prevent SQL injection attacks.
@@ -29,6 +29,7 @@ import hashlib
 import codecs
 # import time
 import json
+import sys
 import os
 import re
 
