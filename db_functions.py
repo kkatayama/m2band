@@ -566,6 +566,17 @@ def clean(data):
     print(cleaned)
     return cleaned
 
+def clean2(data):
+    if isinstance(data, dict):
+        for k, v in data.items():
+            if isinstance(v, FormsDict):
+                data.update({k: dict(v)})
+
+    str_data = json.dumps(data, default=str, indent=2)
+    print(str_data)
+    return str_data
+
+
 # Parsers #####################################################################
 # def extract(col_info, editable_columns):
 #     return{k: v for k, v in {c.values() for c in col_info} if k in editable_columns}
@@ -755,7 +766,7 @@ class ErrorsRestPlugin(object):
             # if checkUserAgent():
             #     res.content_type = "text/html; charset=UTF-8"
 
-            return clean(dict(**{'message': str(res.body)}, **err))
+            return clean2(dict(**{'message': str(res.body)}, **err))
 
         app.default_error_handler = default_error_handler
 
