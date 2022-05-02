@@ -6,7 +6,7 @@ from bottle_sqlite import SQLitePlugin, sqlite3
 from db_functions import (
     insertRow, fetchRow, fetchRows, updateRow, deleteRow,
     addTable, deleteTable, getTable, getTables, getColumns,
-    securePassword, checkPassword, checkUserAgent,
+    securePassword, checkPassword, checkUserAgent, clean2,
     clean, extract, mapUrlPaths, getLogger, log_to_logger, logger,
     parseURI, parseUrlPaths, parseFilters, parseColumnValues,
     ErrorsRestPlugin
